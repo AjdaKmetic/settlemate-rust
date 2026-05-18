@@ -1,12 +1,6 @@
 use argon2::{
-    password_hash::{
-        rand_core::OsRng,
-        PasswordHash,
-        PasswordHasher,
-        PasswordVerifier,
-        SaltString,
-    },
     Argon2,
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
 };
 
 pub fn hash_password(password: &str) -> String {
@@ -30,4 +24,3 @@ pub fn verify_password(password: &str, password_hash: &str) -> bool {
         Err(_) => false,
     }
 }
-

@@ -1,9 +1,5 @@
+use crate::models::{expense::ExpenseId, group::GroupId, user::UserId};
 use serde::Serialize;
-use crate::models::{
-    expense::ExpenseId,
-    group::GroupId,
-    user::UserId,
-};
 
 #[derive(Serialize)]
 pub struct SplitEntryDto {

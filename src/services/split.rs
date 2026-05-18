@@ -140,9 +140,6 @@ mod tests {
         let split = Split::new_exact(vec![(1, -10.0), (2, 20.0)]);
 
         assert!(split.is_err());
-        assert_eq!(
-            split.unwrap_err(),
-            "Share amounts cannot be negative"
-        );
+        assert_eq!(split.unwrap_err(), "Share amounts cannot be negative");
     }
 }

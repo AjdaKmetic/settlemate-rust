@@ -1,24 +1,23 @@
+use crate::services::balance::Balance;
 use std::cmp::Ordering;
-use crate::services::{
-    balance::Balance,
-};
 
-use crate::models::debt::{Debt};
+use crate::models::debt::Debt;
 use crate::models::user::UserId;
 
 const EPSILON: f64 = 0.01;
 
 pub fn simplify_debts(balances: &Balance) -> Vec<Debt> {
     let mut transactions = Vec::new();
-    let mut debtors_and_creditors: Vec<(UserId, f64)> = balances.iter()
+    let mut debtors_and_creditors: Vec<(UserId, f64)> = balances
+        .iter()
         .filter(|&(_, &amount)| amount != 0.0)
         .map(|(&user, &amount)| (user, amount))
         .collect();
     while debtors_and_creditors.len() > 1 {
         debtors_and_creditors.sort_by(|a, b| {
             b.1.partial_cmp(&a.1)
-            .unwrap_or(Ordering::Equal)
-            .then(a.0.cmp(&b.0))
+                .unwrap_or(Ordering::Equal)
+                .then(a.0.cmp(&b.0))
         });
 
         let creditor_index = 0;
@@ -46,7 +45,6 @@ pub fn simplify_debts(balances: &Balance) -> Vec<Debt> {
     }
 
     transactions
-
 }
 
 #[cfg(test)]
@@ -155,4 +153,3 @@ mod tests {
         assert!(debts.is_empty());
     }
 }
-

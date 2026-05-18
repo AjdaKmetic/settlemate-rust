@@ -1,11 +1,7 @@
-use crate::app::state::AppData;
 use crate::app::dto::PaymentDto;
 use crate::app::helpers;
-use crate::models::{
-    payment::Payment,
-    user::UserId,
-    group::GroupId,
-};
+use crate::app::state::AppData;
+use crate::models::{group::GroupId, payment::Payment, user::UserId};
 
 pub fn record_payment(
     data: &mut AppData,
@@ -19,12 +15,13 @@ pub fn record_payment(
     let payment = Payment::new(id, from_id, to_id, amount, group_id)?;
     data.payments.push(payment);
 
-    let last = data.payments.last().unwrap().clone();
+    let last = data.payments.last().unwrap();
     Ok(helpers::payment_to_dto(&last, data))
 }
 
 pub fn delete_payment(data: &mut AppData, payment_id: u64) -> Result<(), String> {
-    let index = data.payments
+    let index = data
+        .payments
         .iter()
         .position(|p| p.id == payment_id)
         .ok_or("Payment not found")?;

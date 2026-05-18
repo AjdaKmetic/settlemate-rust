@@ -1,10 +1,13 @@
+use crate::models::{group::GroupId, user::UserId};
 use std::time::{SystemTime, UNIX_EPOCH};
-use crate::models::{user::UserId, group::GroupId};
 
 pub type PaymentId = u64;
 
 fn now_ms() -> u64 {
-    SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64
 }
 
 #[derive(Debug, Clone)]
@@ -52,11 +55,21 @@ impl Payment {
         })
     }
 
-    pub fn from_id(&self) -> UserId { self.from_id }
-    pub fn to_id(&self) -> UserId { self.to_id }
-    pub fn amount(&self) -> f64 { self.amount }
-    pub fn group_id(&self) -> Option<GroupId> { self.group_id }
-    pub fn created_at(&self) -> u64 { self.created_at }
+    pub fn from_id(&self) -> UserId {
+        self.from_id
+    }
+    pub fn to_id(&self) -> UserId {
+        self.to_id
+    }
+    pub fn amount(&self) -> f64 {
+        self.amount
+    }
+    pub fn group_id(&self) -> Option<GroupId> {
+        self.group_id
+    }
+    pub fn created_at(&self) -> u64 {
+        self.created_at
+    }
 
     pub fn update_amount(&mut self, new_amount: f64) -> Result<(), String> {
         if new_amount <= 0.0 {
@@ -132,7 +145,7 @@ mod tests {
         let mut p = Payment::new(1, 10, 20, 30.0, None).unwrap();
         let result = p.update_amount(-1.0);
         assert!(result.is_err());
-        assert_eq!(p.amount(), 30.0); 
+        assert_eq!(p.amount(), 30.0);
     }
 
     #[test]

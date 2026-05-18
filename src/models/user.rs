@@ -10,9 +10,9 @@ pub struct User {
 
 impl User {
     pub fn new(id: UserId, name: &str, email: &str, password_hash: &str) -> Self {
-        Self { 
-            id, 
-            name: name.to_string(), 
+        Self {
+            id,
+            name: name.to_string(),
             email: email.to_string(),
             password_hash: password_hash.to_string(),
         }
@@ -60,7 +60,12 @@ mod tests {
 
     #[test]
     fn test_user_new() {
-        let user = User::new(1, "Janez Novak", "janeznovak@example.com", "hashed_password");
+        let user = User::new(
+            1,
+            "Janez Novak",
+            "janeznovak@example.com",
+            "hashed_password",
+        );
 
         assert_eq!(user.id, 1);
         assert_eq!(user.name(), "Janez Novak");
@@ -69,7 +74,12 @@ mod tests {
 
     #[test]
     fn test_user_update_name() {
-        let mut user = User::new(1, "Janez Novak", "janeznovak@example.com", "hashed_password");
+        let mut user = User::new(
+            1,
+            "Janez Novak",
+            "janeznovak@example.com",
+            "hashed_password",
+        );
 
         user.update_name("Marko Novak");
 
@@ -78,7 +88,12 @@ mod tests {
 
     #[test]
     fn test_user_update_email() {
-        let mut user = User::new(1, "Janez Novak", "janeznovak@example.com", "hashed_password");
+        let mut user = User::new(
+            1,
+            "Janez Novak",
+            "janeznovak@example.com",
+            "hashed_password",
+        );
 
         user.update_email("janeznovak2@example.com");
 
@@ -87,7 +102,12 @@ mod tests {
 
     #[test]
     fn test_user_id_is_unchanged() {
-        let mut user = User::new(1, "Janez Novak", "janeznovak@example.com", "hashed_password");
+        let mut user = User::new(
+            1,
+            "Janez Novak",
+            "janeznovak@example.com",
+            "hashed_password",
+        );
 
         user.update_name("Marko");
         user.update_email("marko@example.com");
@@ -97,7 +117,12 @@ mod tests {
 
     #[test]
     fn test_multiple_updates() {
-        let mut user = User::new(1, "Janez Novak", "janeznovak@example.com", "hashed_password");
+        let mut user = User::new(
+            1,
+            "Janez Novak",
+            "janeznovak@example.com",
+            "hashed_password",
+        );
 
         user.update_name("Marko");
         user.update_email("marko@example.com");
@@ -108,24 +133,14 @@ mod tests {
 
     #[test]
     fn test_password_hash_getter() {
-        let user = User::new(
-            1,
-            "Janez Novak",
-            "janeznovak@example.com",
-            "my_hash",
-        );
+        let user = User::new(1, "Janez Novak", "janeznovak@example.com", "my_hash");
 
         assert_eq!(user.password_hash(), "my_hash");
     }
 
     #[test]
     fn test_empty_name_and_email() {
-        let user = User::new(
-            1,
-            "",
-            "",
-            "hashed_password",
-        );
+        let user = User::new(1, "", "", "hashed_password");
 
         assert_eq!(user.name(), "");
         assert_eq!(user.email(), "");
@@ -133,12 +148,7 @@ mod tests {
 
     #[test]
     fn test_multiple_password_hash_updates() {
-        let mut user = User::new(
-            1,
-            "Janez Novak",
-            "janeznovak@example.com",
-            "hash1",
-        );
+        let mut user = User::new(1, "Janez Novak", "janeznovak@example.com", "hash1");
 
         user.update_password_hash("hash2");
         user.update_password_hash("hash3");

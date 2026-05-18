@@ -10,18 +10,14 @@ pub struct Debt {
 impl Debt {
     pub fn new(from: UserId, to: UserId, amount: f64) -> Result<Self, String> {
         if from == to {
-            return Err("User cannot owe money to themselves".to_string())
+            return Err("User cannot owe money to themselves".to_string());
         }
 
         if amount < 0.0 {
-            return Err("Amount cannot be negative".to_string())
+            return Err("Amount cannot be negative".to_string());
         }
 
-        Ok(Debt {
-            from,
-            to, 
-            amount,
-        })
+        Ok(Debt { from, to, amount })
     }
 
     pub fn from(&self) -> UserId {
@@ -36,9 +32,9 @@ impl Debt {
         self.amount
     }
 
-    pub fn update_amount(&mut self, new_amount: f64) -> Result<(), String>{
+    pub fn update_amount(&mut self, new_amount: f64) -> Result<(), String> {
         if new_amount < 0.0 {
-            return Err("Amount cannot be negative".to_string())
+            return Err("Amount cannot be negative".to_string());
         }
 
         self.amount = new_amount;
@@ -48,7 +44,6 @@ impl Debt {
     pub fn is_settled(&self) -> bool {
         self.amount.abs() < 0.01
     }
-
 }
 
 #[cfg(test)]

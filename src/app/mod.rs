@@ -1,5 +1,5 @@
 pub mod balances;
-pub mod current_user;   
+pub mod current_user;
 pub mod dto;
 pub mod expenses;
 pub mod friends;

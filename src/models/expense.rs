@@ -1,14 +1,14 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-use crate::models::{
-    user::UserId,
-    group::GroupId,
-};
+use crate::models::{group::GroupId, user::UserId};
 use crate::services::split::Split;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub type ExpenseId = u64;
 
 fn now_ms() -> u64 {
-    SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64
 }
 
 #[derive(Debug, Clone)]
@@ -17,7 +17,7 @@ pub struct Expense {
     pub description: String,
     pub amount: f64,
     pub paid_by: UserId,
-    pub group_id: Option<GroupId>, 
+    pub group_id: Option<GroupId>,
     pub splits: Split,
     pub created_at: u64,
 }
@@ -197,14 +197,7 @@ mod tests {
     fn test_expense_without_group() {
         let user = test_user();
 
-        let expense = Expense::new(
-            1,
-            "Kava",
-            12.0,
-            user.id,
-            None,
-            Split::Equal(vec![1, 2]),
-        );
+        let expense = Expense::new(1, "Kava", 12.0, user.id, None, Split::Equal(vec![1, 2]));
 
         assert_eq!(expense.group_id(), None);
         assert!(!expense.is_group_expense());
@@ -288,14 +281,7 @@ mod tests {
     fn test_assign_to_group() {
         let user = test_user();
 
-        let mut expense = Expense::new(
-            1,
-            "Kava",
-            12.0,
-            user.id,
-            None,
-            Split::Equal(vec![1, 2]),
-        );
+        let mut expense = Expense::new(1, "Kava", 12.0, user.id, None, Split::Equal(vec![1, 2]));
 
         expense.assign_to_group(5);
 
@@ -307,14 +293,7 @@ mod tests {
     fn test_remove_from_group() {
         let user = test_user();
 
-        let mut expense = Expense::new(
-            1,
-            "Kava",
-            12.0,
-            user.id,
-            Some(5),
-            Split::Equal(vec![1, 2]),
-        );
+        let mut expense = Expense::new(1, "Kava", 12.0, user.id, Some(5), Split::Equal(vec![1, 2]));
 
         expense.remove_from_group();
 

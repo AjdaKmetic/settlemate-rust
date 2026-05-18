@@ -1,20 +1,17 @@
-use std::collections::HashMap;
-use crate::models::{
-    expense::Expense,
-    payment::Payment,
-    user::UserId,
-    group::GroupId,
-};
+use crate::models::{expense::Expense, group::GroupId, payment::Payment, user::UserId};
 use crate::services::split::Split;
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct Balance {
-    balances: HashMap<UserId, f64>
+    balances: HashMap<UserId, f64>,
 }
 
 impl Balance {
     pub fn new() -> Self {
-        Self {balances: HashMap::new()}
+        Self {
+            balances: HashMap::new(),
+        }
     }
 
     pub fn get(&self, user_id: &UserId) -> Option<&f64> {
@@ -53,7 +50,7 @@ impl Balance {
             }
         }
 
-        Self {balances}
+        Self { balances }
     }
 
     pub fn apply_payments(&mut self, payments: &[Payment]) {
@@ -95,9 +92,7 @@ impl Balance {
 
                     *result.entry(*p_id).or_insert(0.0) += share;
                 }
-            } else if let Some((_, my_share)) =
-                shares.iter().find(|(p_id, _)| *p_id == my_id)
-            {
+            } else if let Some((_, my_share)) = shares.iter().find(|(p_id, _)| *p_id == my_id) {
                 *result.entry(paid_by).or_insert(0.0) -= my_share;
             }
         }
@@ -113,7 +108,13 @@ impl Balance {
         Self { balances: result }
     }
 
-    pub fn pair_debt_in_context(expenses: &[Expense], payments: &[Payment], from_id: UserId, to_id: UserId, group_filter: Option<GroupId>) -> f64 {
+    pub fn pair_debt_in_context(
+        expenses: &[Expense],
+        payments: &[Payment],
+        from_id: UserId,
+        to_id: UserId,
+        group_filter: Option<GroupId>,
+    ) -> f64 {
         let mut debt = 0.0;
 
         for expense in expenses {
@@ -132,10 +133,7 @@ impl Balance {
 
                     let share = amount / user_ids.len() as f64;
 
-                    user_ids
-                        .iter()
-                        .map(|&user_id| (user_id, share))
-                        .collect()
+                    user_ids.iter().map(|&user_id| (user_id, share)).collect()
                 }
 
                 Split::Exact(pairs) => pairs.iter().cloned().collect(),
@@ -250,8 +248,8 @@ mod tests {
     #[test]
     fn test_apply_payments_basic() {
         let mut balances = Balance::new();
-        balances.insert(1, -30.0); 
-        balances.insert(2, 30.0);  
+        balances.insert(1, -30.0);
+        balances.insert(2, 30.0);
         let payment = Payment::new(1, 1, 2, 30.0, None).unwrap();
         balances.apply_payments(&[payment]);
         assert_eq!(balances.get(&1), Some(&0.0));
@@ -260,8 +258,14 @@ mod tests {
 
     #[test]
     fn test_balances_with_payments_clears_debt() {
-        let expense = Expense::new(1, "Večerja", 60.0, 2, None,
-            Split::new_equal(vec![1, 2]).unwrap());
+        let expense = Expense::new(
+            1,
+            "Večerja",
+            60.0,
+            2,
+            None,
+            Split::new_equal(vec![1, 2]).unwrap(),
+        );
         let payment = Payment::new(1, 1, 2, 30.0, None).unwrap();
         let balances = Balance::balances_with_payments(&[expense], &[payment]);
         assert_eq!(balances.get(&1), Some(&0.0));
@@ -270,8 +274,14 @@ mod tests {
 
     #[test]
     fn test_balances_with_payments_partial() {
-        let expense = Expense::new(1, "Večerja", 60.0, 2, None,
-            Split::new_equal(vec![1, 2]).unwrap());
+        let expense = Expense::new(
+            1,
+            "Večerja",
+            60.0,
+            2,
+            None,
+            Split::new_equal(vec![1, 2]).unwrap(),
+        );
         let payment = Payment::new(1, 1, 2, 10.0, None).unwrap();
         let balances = Balance::balances_with_payments(&[expense], &[payment]);
         assert_eq!(balances.get(&1), Some(&-20.0));
@@ -280,8 +290,14 @@ mod tests {
 
     #[test]
     fn test_pairwise_balances_with_payment_settles() {
-        let expense = Expense::new(1, "Večerja", 60.0, 2, None,
-            Split::new_equal(vec![1, 2]).unwrap());
+        let expense = Expense::new(
+            1,
+            "Večerja",
+            60.0,
+            2,
+            None,
+            Split::new_equal(vec![1, 2]).unwrap(),
+        );
         let payment = Payment::new(1, 1, 2, 30.0, None).unwrap();
         let pairwise = Balance::pairwise_balances(&[expense], &[payment], 1);
         let owed = pairwise.get(&2).cloned().unwrap_or(0.0);
@@ -290,8 +306,14 @@ mod tests {
 
     #[test]
     fn test_pairwise_balances_respects_exact_split() {
-        let expense = Expense::new(1, "Nakup", 100.0, 1, None,
-            Split::new_exact(vec![(1, 10.0), (2, 40.0), (3, 50.0)]).unwrap());
+        let expense = Expense::new(
+            1,
+            "Nakup",
+            100.0,
+            1,
+            None,
+            Split::new_exact(vec![(1, 10.0), (2, 40.0), (3, 50.0)]).unwrap(),
+        );
         let pairwise = Balance::pairwise_balances(&[expense], &[], 1);
         let owed_by_2 = pairwise.get(&2).cloned().unwrap_or(0.0);
         let owed_by_3 = pairwise.get(&3).cloned().unwrap_or(0.0);
@@ -301,8 +323,14 @@ mod tests {
 
     #[test]
     fn test_pairwise_balances_from_payer() {
-        let expense = Expense::new(1, "Večerja", 60.0, 2, None,
-            Split::new_equal(vec![1, 2]).unwrap());
+        let expense = Expense::new(
+            1,
+            "Večerja",
+            60.0,
+            2,
+            None,
+            Split::new_equal(vec![1, 2]).unwrap(),
+        );
         let pairwise = Balance::pairwise_balances(&[expense], &[], 2);
         let owed_by_1 = pairwise.get(&1).cloned().unwrap_or(0.0);
         assert_eq!(owed_by_1, 30.0);
@@ -310,8 +338,14 @@ mod tests {
 
     #[test]
     fn test_pairwise_balances_from_participant() {
-        let expense = Expense::new(1, "Večerja", 60.0, 2, None,
-            Split::new_equal(vec![1, 2]).unwrap());
+        let expense = Expense::new(
+            1,
+            "Večerja",
+            60.0,
+            2,
+            None,
+            Split::new_equal(vec![1, 2]).unwrap(),
+        );
         let pairwise = Balance::pairwise_balances(&[expense], &[], 1);
         let owed_to_2 = pairwise.get(&2).cloned().unwrap_or(0.0);
         assert_eq!(owed_to_2, -30.0);
@@ -319,10 +353,22 @@ mod tests {
 
     #[test]
     fn group_filter_isolates_contexts() {
-        let expense1 = Expense::new(1, "Večerja", 20.0, 2, Some(5),
-            Split::new_equal(vec![1, 2]).unwrap());
-        let expense2 = Expense::new(2, "Kosilo", 30.0, 2, None,
-            Split::new_equal(vec![1, 2]).unwrap());
+        let expense1 = Expense::new(
+            1,
+            "Večerja",
+            20.0,
+            2,
+            Some(5),
+            Split::new_equal(vec![1, 2]).unwrap(),
+        );
+        let expense2 = Expense::new(
+            2,
+            "Kosilo",
+            30.0,
+            2,
+            None,
+            Split::new_equal(vec![1, 2]).unwrap(),
+        );
         let expenses = vec![expense1, expense2];
 
         let in_group_5 = Balance::pair_debt_in_context(&expenses, &[], 1, 2, Some(5));
@@ -334,6 +380,4 @@ mod tests {
         let other_group = Balance::pair_debt_in_context(&expenses, &[], 1, 2, Some(99));
         assert_eq!(other_group, 0.0);
     }
-
-
 }

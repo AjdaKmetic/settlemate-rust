@@ -1,6 +1,6 @@
-use crate::app::state::AppData;
 use crate::app::dto::{BalanceDto, ExpenseDto, UserDto};
 use crate::app::helpers::{expense_to_dto, name_of};
+use crate::app::state::AppData;
 use crate::models::user::{User, UserId};
 use crate::services::balance::Balance;
 
@@ -32,10 +32,7 @@ pub fn list_friends(data: &AppData) -> Vec<UserDto> {
 pub fn list_expenses_for_friend(data: &AppData, friend_id: UserId) -> Vec<ExpenseDto> {
     data.expenses
         .iter()
-        .filter(|e| {
-            e.paid_by() == friend_id
-                || e.splits().participants().contains(&friend_id)
-        })
+        .filter(|e| e.paid_by() == friend_id || e.splits().participants().contains(&friend_id))
         .map(|e| expense_to_dto(data, e))
         .collect()
 }

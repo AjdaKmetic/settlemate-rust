@@ -1,13 +1,9 @@
 use crate::app::dto::ExpenseDto;
-use crate::app::state::AppData;
-use crate::services::split::Split;
-use crate::models::expense::{Expense, ExpenseId};
-use crate::models::{
-    user::UserId,
-    group::GroupId,
-};
 use crate::app::helpers::expense_to_dto;
-
+use crate::app::state::AppData;
+use crate::models::expense::{Expense, ExpenseId};
+use crate::models::{group::GroupId, user::UserId};
+use crate::services::split::Split;
 
 pub fn add_expense(
     data: &mut AppData,
@@ -34,7 +30,8 @@ pub fn update_expense(
     splits: Option<Split>,
 ) -> Result<ExpenseDto, String> {
     {
-        let expense = data.expenses
+        let expense = data
+            .expenses
             .iter_mut()
             .find(|e| e.id == expense_id)
             .ok_or("Expense not found")?;
@@ -57,9 +54,10 @@ pub fn update_expense(
         if let Some(s) = splits {
             expense.update_splits(s);
         }
-    } 
+    }
 
-    let expense = data.expenses
+    let expense = data
+        .expenses
         .iter()
         .find(|e| e.id == expense_id)
         .ok_or("Expense not found")?;
@@ -68,13 +66,20 @@ pub fn update_expense(
 }
 
 pub fn delete_expense(data: &mut AppData, expense_id: ExpenseId) -> Result<(), String> {
-    let index = data.expenses.iter().position(|e| e.id == expense_id).ok_or("Expense not found")?;
+    let index = data
+        .expenses
+        .iter()
+        .position(|e| e.id == expense_id)
+        .ok_or("Expense not found")?;
     data.expenses.remove(index);
     Ok(())
 }
 
 pub fn list_expenses(data: &AppData) -> Vec<ExpenseDto> {
-    data.expenses.iter().map(|e| expense_to_dto(data, e)).collect()
+    data.expenses
+        .iter()
+        .map(|e| expense_to_dto(data, e))
+        .collect()
 }
 
 #[cfg(test)]
@@ -84,7 +89,12 @@ mod tests {
     #[test]
     fn test_add_expense() {
         let mut data = AppData::default();
-        data.users.push(crate::models::user::User::new(1, "Alice", "alice@example.com", "hashed_password"));
+        data.users.push(crate::models::user::User::new(
+            1,
+            "Alice",
+            "alice@example.com",
+            "hashed_password",
+        ));
         let splits = crate::services::split::Split::new_equal(vec![1]).unwrap();
         let dto = add_expense(&mut data, "Dinner".to_string(), 20.0, 1, None, splits).unwrap();
         assert_eq!(dto.description, "Dinner");
@@ -99,7 +109,12 @@ mod tests {
     #[test]
     fn test_update_expense() {
         let mut data = AppData::default();
-        data.users.push(crate::models::user::User::new(1, "Alice", "alice@example.com", "hashed_password"));
+        data.users.push(crate::models::user::User::new(
+            1,
+            "Alice",
+            "alice@example.com",
+            "hashed_password",
+        ));
         let splits = crate::services::split::Split::new_equal(vec![1]).unwrap();
         let dto = add_expense(&mut data, "Dinner".to_string(), 20.0, 1, None, splits).unwrap();
         assert_eq!(dto.description, "Dinner");
@@ -114,7 +129,12 @@ mod tests {
     #[test]
     fn test_delete_expense() {
         let mut data = AppData::default();
-        data.users.push(crate::models::user::User::new(1, "Alice", "alice@example.com", "hashed_password"));
+        data.users.push(crate::models::user::User::new(
+            1,
+            "Alice",
+            "alice@example.com",
+            "hashed_password",
+        ));
         let splits = crate::services::split::Split::new_equal(vec![1]).unwrap();
         let dto = add_expense(&mut data, "Dinner".to_string(), 20.0, 1, None, splits).unwrap();
         assert_eq!(dto.description, "Dinner");
@@ -129,12 +149,16 @@ mod tests {
     #[test]
     fn test_list_expenses() {
         let mut data = AppData::default();
-        data.users.push(crate::models::user::User::new(1, "Alice", "alice@example.com", "hashed_password"));
+        data.users.push(crate::models::user::User::new(
+            1,
+            "Alice",
+            "alice@example.com",
+            "hashed_password",
+        ));
         let splits = crate::services::split::Split::new_equal(vec![1]).unwrap();
         let _dto = add_expense(&mut data, "Dinner".to_string(), 20.0, 1, None, splits).unwrap();
         let expenses = list_expenses(&data);
         assert_eq!(expenses.len(), 1);
         assert_eq!(expenses[0].description, "Dinner");
     }
-
 }
