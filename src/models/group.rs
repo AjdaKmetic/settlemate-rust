@@ -5,8 +5,8 @@ pub type GroupId = u64;
 #[derive(Debug, Clone)]
 pub struct Group {
     pub id: GroupId,
-    name: String,
-    members: Vec<UserId>,
+    pub name: String,
+    pub members: Vec<UserId>,
 }
 
 // dodaj še: metodo, ki poišče userja v podatkovni bazi, če poznamo samo njegov id

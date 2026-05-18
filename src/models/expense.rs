@@ -14,12 +14,12 @@ fn now_ms() -> u64 {
 #[derive(Debug, Clone)]
 pub struct Expense {
     pub id: ExpenseId,
-    description: String,
-    amount: f64,
-    paid_by: UserId,
-    group_id: Option<GroupId>, 
-    splits: Split,
-    created_at: u64,
+    pub description: String,
+    pub amount: f64,
+    pub paid_by: UserId,
+    pub group_id: Option<GroupId>, 
+    pub splits: Split,
+    pub created_at: u64,
 }
 
 impl Expense {

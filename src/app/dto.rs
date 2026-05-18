@@ -1,59 +1,78 @@
 use serde::Serialize;
+use crate::models::{
+    expense::ExpenseId,
+    group::GroupId,
+    user::UserId,
+};
 
- #[derive(Serialize)]
+#[derive(Serialize)]
+pub struct SplitEntryDto {
+    pub user_id: UserId,
+    pub amount: f64,
+}
+
+#[derive(Serialize)]
+pub struct ExpenseDto {
+    pub id: ExpenseId,
+    pub description: String,
+    pub amount: f64,
+    pub paid_by: UserId,
+    pub group_id: Option<GroupId>,
+    pub splits: Vec<(String, f64)>,
+    pub created_at: u64,
+}
+
+#[derive(Serialize)]
 pub struct GroupDto {
-     id: u32,
-     name: String,
-     member_ids: Vec<u32>,
-     members: Vec<String>, 
-     expense_count: usize,
-     has_outstanding: bool,
-     my_balance: f64,
- }
+    pub id: GroupId,
+    pub name: String,
+    pub member_ids: Vec<UserId>,
+    pub members: Vec<String>,
+    pub expense_count: usize,
+    pub has_outstanding: bool,
+    pub my_balance: f64,
+}
 
-    #[derive(Serialize)]
- pub struct FriendDto {
-     id: u32,
-     name: String,
-     email: String,
-     balance: f64,
- }
+#[derive(Serialize)]
+pub struct FriendDto {
+    pub id: UserId,
+    pub name: String,
+    pub email: String,
+    pub balance: f64,
+}
 
-    #[derive(Serialize)]
- pub struct ExpenseDto {
-     id: u32,
-     description: String,
-     amount: f64,
-     paid_by: String,
-     group_id: Option<u32>,
-     splits: Vec<(String, f64)>,
-     created_at: u64,
- }
+#[derive(Serialize)]
+pub struct UserDto {
+    pub id: UserId,
+    pub name: String,
+    pub email: String,
+}
 
-    #[derive(Serialize)]
- pub struct PaymentDto {
-     id: u32,
-     from_id: u32,
-     from_name: String,
-     to_id: u32,
-     to_name: String,
-     amount: f64,
-     group_id: Option<u32>,
-     group_name: Option<String>,
-     created_at: u64,
- }
+#[derive(Serialize)]
+pub struct PaymentDto {
+    pub id: u64,
+    pub from_id: UserId,
+    pub from_name: String,
+    pub to_id: UserId,
+    pub to_name: String,
+    pub amount: f64,
+    pub group_id: Option<GroupId>,
+    pub group_name: Option<String>,
+    pub created_at: u64,
+}
 
-    #[derive(Serialize)]
- pub struct BalanceDto {
-     total_balance: f64,
-     group_balances: Vec<(String, f64)>,
- }
+#[derive(Serialize)]
+pub struct BalanceDto {
+    pub user_id: UserId,
+    pub name: String,
+    pub amount: f64,
+}
 
-    #[derive(Serialize)]
- pub struct SettlmentDto {
-     id: u32,
-     with_user_id: u32,
-     with_user_name: String,
-     amount: f64,
-     created_at: u64,
- }
+#[derive(Serialize)]
+pub struct DebtDto {
+    pub from_id: UserId,
+    pub from_name: String,
+    pub to_id: UserId,
+    pub to_name: String,
+    pub amount: f64,
+}

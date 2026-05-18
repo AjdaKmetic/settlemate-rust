@@ -1631,6 +1631,7 @@ dependencies = [
  "argon2",
  "dotenvy",
  "sea-orm",
+ "serde",
  "tokio",
 ]
 

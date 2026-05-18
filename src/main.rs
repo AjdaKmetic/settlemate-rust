@@ -1,4 +1,4 @@
-use sea_orm::{EntityTrait};
+/* use sea_orm::{EntityTrait};
 
 use settlemate_rust::{
     // models::expense::Expense,
@@ -91,4 +91,8 @@ async fn main() {
         println!("{} - {} ({})", user.id, user.name, user.email);
     }
 
+} */
+
+fn main() {
+    println!("Splitwise app");
 }
