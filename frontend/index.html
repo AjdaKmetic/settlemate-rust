@@ -1,41 +1,93 @@
 <!DOCTYPE html>
 <html lang="sl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SettleMate</title>
-  </head>
-  <body>
-    <h1>Welcome to SettleMate</h1>
-    <p>This is the frontend of the SettleMate application.</p>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SettleMate</title>
+<style>
+  body {
+    background-color: #f8f6f2;
+  }
 
-    <h2>Dodaj prijatelja</h2>
-    <input type="text" id="friendName" placeholder="Ime prijatelja" />
-    <button id="addFriendBtn">Dodaj prijatelja</button>
+  .screen {
+    display: none;
+  }
 
-    <h2>Prijatelji</h2>
-    <ul id="friendsList"></ul>
-      <li>Seznam še ni naložen.</li>
-    </ul>
+  .screen.active {
+    display: block;
+  }
+  .tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: white;
+    border-top: 1px solid #ddd;
+    display: flex;
+  }
+  
+  .tab{
+    flex: 1;
+    border: none;
+    background: none;
+    font-size: 14px;
+    cursor: pointer;
+  }
 
-    <script>
-      const nameInput = document.getElementById('friendName');
-      const addBtn = document.getElementById('addFriendBtn');
-      const friendsList = document.getElementById('friendsList');
-
-      async function loadFriends() {
-        const friends = await window.api.invoke('get_friends');
-        friendsList.innerHTML = '';
-        if (friends.length === 0) {
-          friendsList.innerHTML = '<li>Seznam še ni naložen.</li>';
-          return;
-        }
-        friends.forEach(friend => {
-          const li = document.createElement('li');
-          li.textContent = friend.name;
-          friendsList.appendChild(li);
+</style>
+</head>
+<body>
+  <section id="screen-friends" class="screen active">
+    <h1>Friends</h1>
+    <label for="friends-name">Name:</label>
+    <input id="friends-name" type="text">
+    <button id="add-friend">Add Friend</button>
+    <ul id="friends-list"></ul>
+  </section>
+  
+  <section id="screen-groups" class="screen">
+    <h1>Groups</h1>
+    <p>Here you can manage your groups and see your group list.</p>
+  </section>
+  
+  <section id="screen-activity" class="screen">
+    <h1>Activity</h1>
+    <p>Here you can see your recent activity, including expenses, payments, and friend requests.</p>
+  </section>
+  
+  <section id="screen-account" class="screen">
+    <h1>Account</h1>
+    <p>Here you can manage your account settings, including your profile information and preferences.</p>
+  </section>
+  <nav class="tabbar">
+    <button class="tab" data-screen="friends">Friends</button>
+    <button class="tab" data-screen="groups">Groups</button>
+    <button class="tab" data-screen="activity">Activity</button>
+    <button class="tab" data-screen="account">Account</button>
+  </nav>
+  <script>
+    const { invoke } = window.__TAURI__.core;
+    // navigacija med zasloni
+    document.querySelectorAll('.tab').forEach(button => {
+      button.addEventListener('click', () => {
+        const screenId = `screen-${button.dataset.screen}`;
+        document.querySelectorAll('.screen').forEach(screen => {
+          screen.classList.toggle('active', screen.id === screenId);
         });
+      });
+    });
+    // dodajanje prijateljev
+    document.getElementById('add-friend').addEventListener('click', () => {
+      const nameInput = document.getElementById('friends-name');
+      const name = nameInput.value.trim();
+      if (name) {
+        const li = document.createElement('li');
+        li.textContent = name;
+        document.getElementById('friends-list').appendChild(li);
+        nameInput.value = '';
       }
-    </script>
-  </body>
+    });
+  </script>
+</body>
 </html>
