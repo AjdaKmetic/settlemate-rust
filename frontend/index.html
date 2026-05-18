@@ -23,12 +23,19 @@
       const addBtn = document.getElementById('addFriendBtn');
       const friendsList = document.getElementById('friendsList');
 
-      async function name(params) {
-        
-      } refreshFriends() {
-
-
-      refreshFriends();
+      async function loadFriends() {
+        const friends = await window.api.invoke('get_friends');
+        friendsList.innerHTML = '';
+        if (friends.length === 0) {
+          friendsList.innerHTML = '<li>Seznam še ni naložen.</li>';
+          return;
+        }
+        friends.forEach(friend => {
+          const li = document.createElement('li');
+          li.textContent = friend.name;
+          friendsList.appendChild(li);
+        });
+      }
     </script>
   </body>
 </html>
