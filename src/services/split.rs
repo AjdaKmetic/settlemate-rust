@@ -1,6 +1,6 @@
 use crate::models::user::UserId;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum Split {
     Equal(Vec<UserId>),
     Exact(Vec<(UserId, f64)>),

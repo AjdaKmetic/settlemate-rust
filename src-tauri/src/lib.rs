@@ -2,55 +2,64 @@ use std::sync::Mutex;
 use tauri::State;
 
 use settlemate_rust::app::{
-    state::AppData,
-    dto::*,
+    balances,
+    dto::{BalanceDto, DebtDto, ExpenseDto, GroupDto, PaymentDto, UserDto},
+    expenses,
     friends,
     groups,
-    expenses,
     payments,
-    balances,
-    current_user,
+    state::AppData,
+};
+use settlemate_rust::models::{
+    expense::ExpenseId,
+    group::GroupId,
+    user::UserId,
+};
+use settlemate_rust::services::{
+    auth_service::hash_password,
+    split::Split,
 };
 
-struct AppState(Mutex<AppData>);
+pub struct AppState(pub Mutex<AppData>);
 
-// FRIENDS
-
+// FRIENDS 
 #[tauri::command]
-fn add_friend(name: String, state: State<AppState>) -> FriendDto {
+fn add_friend(
+    name: String,
+    state: State<AppState>,
+) -> Result<UserDto, String> {
     let mut data = state.0.lock().unwrap();
-    friends::add_friend(&mut data, name)
+    friends::add_friend(&mut data, name, String::new(), String::new())
 }
 
 #[tauri::command]
-fn list_friends(state: State<AppState>) -> Vec<FriendDto> {
+fn list_friends(state: State<AppState>) -> Vec<UserDto> {
     let data = state.0.lock().unwrap();
     friends::list_friends(&data)
 }
+
 #[tauri::command]
-fn list_expenses_for_friend(friend_id: u64, state: State<AppState>) -> Vec<ExpenseDto> {
+fn list_expenses_for_friend(friend_id: UserId, state: State<AppState>) -> Vec<ExpenseDto> {
     let data = state.0.lock().unwrap();
     friends::list_expenses_for_friend(&data, friend_id)
 }
 
 #[tauri::command]
-fn friend_breakdown(friend_id: u64, state: State<AppState>) -> Vec<BalanceDto> {
+fn friend_breakdown(friend_id: UserId, state: State<AppState>) -> Vec<BalanceDto> {
     let data = state.0.lock().unwrap();
     friends::friend_breakdown(&data, friend_id)
-}
-
-#[tauri::command]
-fn remove_friend(id: u64, state: State<AppState>) -> Result<(), String> {
-    let mut data = state.0.lock().unwrap();
-    friends::remove_friend(&mut data, id)
 }
 
 // GROUPS
 
 #[tauri::command]
-fn create_group(name: String, state: State<AppState>) -> GroupDto {
+fn create_group(
+    name: String,
+    member_ids: Vec<UserId>,
+    state: State<AppState>,
+) -> Result<GroupDto, String> {
     let mut data = state.0.lock().unwrap();
-    groups::create_group(&mut data, name)
+    groups::create_group(&mut data, name, member_ids)
 }
 
 #[tauri::command]
@@ -60,56 +69,61 @@ fn list_groups(state: State<AppState>) -> Vec<GroupDto> {
 }
 
 #[tauri::command]
-fn group_balances(group_id: u64, state: State<AppState>) -> Vec<BalanceDto> {
+fn group_balances(group_id: GroupId, state: State<AppState>) -> Result<Vec<BalanceDto>, String> {
     let data = state.0.lock().unwrap();
-    groups::group_balances(&data, group_id)
+    let my_id = data
+        .current_user_id
+        .ok_or("No current user set".to_string())?;
+    Ok(groups::group_balances(&data, group_id, my_id))
 }
 
 #[tauri::command]
-fn simplify_group_balances(group_id: u64, state: State<AppState>) -> Vec<DebtDto> {
+fn simplify_group(group_id: GroupId, state: State<AppState>) -> Vec<DebtDto> {
     let data = state.0.lock().unwrap();
-    groups::simplify_group_balances(&data, group_id)
+    groups::simplify_group_debts(&data, group_id)
 }
 
 #[tauri::command]
-fn add_member_to_group(group_id: u64, user_id: u64, state: State<AppState>) -> Result<(), String> {
-    let mut data = state.0.lock().unwrap();
-    groups::add_member_to_group(&mut data, group_id, user_id)
+fn list_group_expenses(group_id: GroupId, state: State<AppState>) -> Vec<ExpenseDto> {
+    let data = state.0.lock().unwrap();
+    groups::list_group_expenses(&data, group_id)
 }
 
 #[tauri::command]
-fn remove_member_from_group(group_id: u64, user_id: u64, state: State<AppState>) -> Result<(), String> {
-    let mut data = state.0.lock().unwrap();
-    groups::remove_member_from_group(&mut data, group_id, user_id)
-}
-
-#[tauri::command]
-fn delete_group(group_id: u64, state: State<AppState>) -> Result<(), String> {
+fn delete_group(group_id: GroupId, state: State<AppState>) -> Result<(), String> {
     let mut data = state.0.lock().unwrap();
     groups::delete_group(&mut data, group_id)
 }
 
 #[tauri::command]
-fn list_group_members(group_id: u64, state: State<AppState>) -> Vec<UserDto> {
-    let data = state.0.lock().unwrap();
-    groups::list_group_members(&data, group_id)
+fn add_member_to_group(
+    group_id: GroupId,
+    user_id: UserId,
+    state: State<AppState>,
+) -> Result<(), String> {
+    let mut data = state.0.lock().unwrap();
+    groups::add_member_to_group(&mut data, group_id, user_id)
 }
 
 #[tauri::command]
-fn list_group_expenses(group_id: u64, state: State<AppState>) -> Vec<ExpenseDto> {
-    let data = state.0.lock().unwrap();
-    groups::list_group_expenses(&data, group_id)
+fn remove_member_from_group(
+    group_id: GroupId,
+    user_id: UserId,
+    state: State<AppState>,
+) -> Result<(), String> {
+    let mut data = state.0.lock().unwrap();
+    groups::remove_member_from_group(&mut data, group_id, user_id)
 }
 
 // EXPENSES
 
 #[tauri::command]
-fn add_expense(  
+fn add_expense(
     description: String,
     amount: f64,
-    paid_by: u64,
-    group_id: Option<u64>,
-    splits: Vec<(u64, f64)>,
+    paid_by: UserId,
+    group_id: Option<GroupId>,
+    splits: Split,
     state: State<AppState>,
 ) -> Result<ExpenseDto, String> {
     let mut data = state.0.lock().unwrap();
@@ -118,20 +132,28 @@ fn add_expense(
 
 #[tauri::command]
 fn update_expense(
-    expense_id: u64,
+    expense_id: ExpenseId,
     description: Option<String>,
     amount: Option<f64>,
-    paid_by: Option<u64>,
-    group_id: Option<Option<u64>>,
-    splits: Option<Vec<(u64, f64)>>,
+    paid_by: Option<UserId>,
+    group_id: Option<Option<GroupId>>,
+    splits: Option<Split>,
     state: State<AppState>,
 ) -> Result<ExpenseDto, String> {
     let mut data = state.0.lock().unwrap();
-    expenses::update_expense(&mut data, expense_id, description, amount, paid_by, group_id, splits)
+    expenses::update_expense(
+        &mut data,
+        expense_id,
+        description,
+        amount,
+        paid_by,
+        group_id,
+        splits,
+    )
 }
 
 #[tauri::command]
-fn delete_expense(expense_id: u64, state: State<AppState>) -> Result<(), String> {
+fn delete_expense(expense_id: ExpenseId, state: State<AppState>) -> Result<(), String> {
     let mut data = state.0.lock().unwrap();
     expenses::delete_expense(&mut data, expense_id)
 }
@@ -146,10 +168,10 @@ fn list_expenses(state: State<AppState>) -> Vec<ExpenseDto> {
 
 #[tauri::command]
 fn record_payment(
-    from_id: u64,
-    to_id: u64,
+    from_id: UserId,
+    to_id: UserId,
     amount: f64,
-    group_id: Option<u64>,
+    group_id: Option<GroupId>,
     state: State<AppState>,
 ) -> Result<PaymentDto, String> {
     let mut data = state.0.lock().unwrap();
@@ -169,13 +191,13 @@ fn list_payments(state: State<AppState>) -> Vec<PaymentDto> {
 }
 
 #[tauri::command]
-fn list_payments_for_friend(friend_id: u64, state: State<AppState>) -> Vec<PaymentDto> {
+fn list_payments_for_friend(friend_id: UserId, state: State<AppState>) -> Vec<PaymentDto> {
     let data = state.0.lock().unwrap();
     payments::list_payments_for_friend(&data, friend_id)
 }
 
 #[tauri::command]
-fn list_payments_for_group(group_id: u64, state: State<AppState>) -> Vec<PaymentDto> {
+fn list_payments_for_group(group_id: GroupId, state: State<AppState>) -> Vec<PaymentDto> {
     let data = state.0.lock().unwrap();
     payments::list_payments_for_group(&data, group_id)
 }
@@ -189,103 +211,93 @@ fn get_balances(state: State<AppState>) -> Vec<BalanceDto> {
 }
 
 #[tauri::command]
-fn get_balance_with_friend(friend_id: u64, state: State<AppState>) -> Vec<BalanceDto> {
-    let data = state.0.lock().unwrap();
-    balances::get_balance_with_friend(&data, friend_id)
-}
-
-#[tauri::command]
-fn get_balance_with_group(group_id: u64, state: State<AppState>) -> Vec<BalanceDto> {
-    let data = state.0.lock().unwrap();
-    balances::get_balance_with_group(&data, group_id)
-}
-
-#[tauri::command]
-fn simplify_balances(state: State<AppState>) -> Vec<DebtDto> {
+fn simplify(state: State<AppState>) -> Vec<DebtDto> {
     let data = state.0.lock().unwrap();
     balances::simplify_balances(&data)
-}
-
-#[tauri::command]
-fn simplify_balances_with_friend(friend_id: u64, state: State<AppState>) -> Vec<DebtDto> {
-    let data = state.0.lock().unwrap();
-    balances::simplify_balances_with_friend(&data, friend_id)
-}
-
-#[tauri::command]
-fn simplify_balances_with_group(group_id: u64, state: State<AppState>) -> Vec<DebtDto> {
-    let data = state.0.lock().unwrap();
-    balances::simplify_balances_with_group(&data, group_id)
 }
 
 // CURRENT USER
 
 #[tauri::command]
-fn login(email: String, password: String, state: State<AppState>) -> Result<UserDto, String> {
+fn set_current_user(user_id: UserId, state: State<AppState>) -> Result<(), String> {
     let mut data = state.0.lock().unwrap();
-    current_user::login(&mut data, email, password)
+    if !data.users.iter().any(|u| u.id == user_id) {
+        return Err("User not found".to_string());
+    }
+    data.current_user_id = Some(user_id);
+    Ok(())
 }
 
 #[tauri::command]
-fn logout(state: State<AppState>) {
+fn clear_current_user(state: State<AppState>) {
     let mut data = state.0.lock().unwrap();
-    current_user::logout(&mut data);
+    data.current_user_id = None;
 }
 
 #[tauri::command]
 fn get_current_user(state: State<AppState>) -> Option<UserDto> {
     let data = state.0.lock().unwrap();
-    current_user::get_current_user(&data)
+    let my_id = data.current_user_id?;
+    data.users
+        .iter()
+        .find(|u| u.id == my_id)
+        .map(|u| UserDto {
+            id: u.id,
+            name: u.name.clone(),
+            email: u.email.clone(),
+        })
 }
 
-#[tauri::command]
-fn set_current_user(user_id: Option<u64>, state: State<AppState>) -> Result<(), String> {
-    let mut data = state.0.lock().unwrap();
-    current_user::set_current_user(&mut data, user_id)
-}
+//  ENTRY POINT 
 
-// ENTRY POINT
-
-#[cfg_aftr(mobile, tauri::mobile_entry_point)]
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .manage(AppState(Mutex::new(AppData::default())))
+        .setup(|app| {
+            if cfg!(debug_assertions) {
+                app.handle().plugin(
+                    tauri_plugin_log::Builder::default()
+                        .level(log::LevelFilter::Info)
+                        .build(),
+                )?;
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
+            // Friends
             add_friend,
             list_friends,
             list_expenses_for_friend,
             friend_breakdown,
-            remove_friend,
+            // Groups
             create_group,
             list_groups,
             group_balances,
-            simplify_group_balances,
+            simplify_group,
+            list_group_expenses,
+            delete_group,
             add_member_to_group,
             remove_member_from_group,
-            delete_group,
-            list_group_members,
-            list_group_expenses,
+            // Expenses
             add_expense,
             update_expense,
             delete_expense,
             list_expenses,
+            // Payments
             record_payment,
             delete_payment,
             list_payments,
             list_payments_for_friend,
             list_payments_for_group,
+            // Balances
             get_balances,
-            get_balance_with_friend,
-            get_balance_with_group,
-            simplify_balances,
-            simplify_balances_with_friend,
-            simplify_balances_with_group,
-            login,
-            logout,
+            simplify,
+            // Current user
             get_current_user,
-            set_current_user
+            set_current_user,
+            clear_current_user,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-

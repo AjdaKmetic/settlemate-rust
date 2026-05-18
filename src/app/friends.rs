@@ -10,8 +10,8 @@ pub fn add_friend(
     email: String,
     password_hash: String,
 ) -> Result<UserDto, String> {
-    let id = data.next_user_id as UserId;
     data.next_user_id += 1;
+    let id = data.next_user_id as UserId;
     let user = User::new(id, &name, &email, &password_hash);
     data.users.push(user);
     Ok(UserDto { id, name, email })
@@ -20,6 +20,7 @@ pub fn add_friend(
 pub fn list_friends(data: &AppData) -> Vec<UserDto> {
     data.users
         .iter()
+        .filter(|u| data.current_user_id.map_or(true, |cur| u.id != cur))
         .map(|u| UserDto {
             id: u.id,
             name: u.name.clone(),
