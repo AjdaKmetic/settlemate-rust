@@ -1,5 +1,6 @@
 use std::sync::Mutex;
 use tauri::State;
+use tauri::Manager;
 
 use settlemate_rust::app::{
     balances, current_user,
@@ -237,6 +238,10 @@ pub fn run() {
                         .build(),
                 )?;
             }
+            let state = app.state::<AppState>();
+            let mut data = state.0.lock().unwrap();
+            let _ = friends::add_friend(&mut data, "Juno".to_string(), String::new(), String::new());
+            data.current_user_id = Some(1);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
