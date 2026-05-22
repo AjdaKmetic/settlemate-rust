@@ -55,14 +55,38 @@
     display: none;
   }
 
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white;
+    padding: 20px;
+    z-index: 1000;
+    overflow-y: auto;
+  }
+
+  .modal.active {
+    display: block;
+  }
+
+  .modal-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+
 </style>
 </head>
 <body>
   <section id="screen-friends" class="screen active">
     <h1>Friends</h1>
-    <label for="friends-name">Name:</label>
+    <label for="friends-name">Add a new friend:</label>
     <input id="friends-name" type="text">
     <button id="add-friend">Add Friend</button>
+    
     <ul id="friends-list"></ul>
   </section>
   
@@ -87,28 +111,72 @@
     <button class="tab" data-screen="account">Account</button>
   </nav>
   <button id="open-expense-modal" class="fab">+</button>
+  <div id="expense-modal" class="modal hidden">
+    <div class="modal-card">
+      <h2>Add Expense</h2>
+      <label for="friend-select">Pick a friend to split with:</label>
+      <select id="friend-select">
+        <option value="">Select a friend</option>
+      </select>
+      <label for="expense-paid-by">Paid by:</label>
+      <select id="expense-paid-by">
+        <option value="">Select who paid</option>
+      </select>
+      <label for="expense-description">Description:</label>
+      <input id="expense-description" type="text">
+      <label for="expense-amount">Amount:</label>
+      <input id="expense-amount" type="number" step="0.01">
+      <button id="save-expense">Save</button>
+      <button id="cancel-expense">Cancel</button>
+    </div>
+  </div>
+  
   <script>
     const { invoke } = window.__TAURI__.core;
     // navigacija med zasloni
-    document.querySelectorAll('.tab').forEach(button => {
-      button.addEventListener('click', () => {
-        const screenId = `screen-${button.dataset.screen}`;
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const screenId = `screen-${tab.dataset.screen}`;
         document.querySelectorAll('.screen').forEach(screen => {
           screen.classList.toggle('active', screen.id === screenId);
         });
       });
     });
     // dodajanje prijateljev
-    document.getElementById('add-friend').addEventListener('click', () => {
+    async function loadFriends() {
+      try {
+        const friends = await invoke('list_friends');
+        friends.sort((a, b) => a.name.localeCompare(b.name));
+        const friendsList = document.getElementById('friends-list');
+        friendsList.innerHTML = '';
+        friends.forEach(friend => {
+          const li = document.createElement('li');
+          li.textContent = friend.name;
+          friendsList.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error loading friends:', error);
+      }
+    }
+    loadFriends();
+    document.getElementById('add-friend').addEventListener('click', async () => {
       const nameInput = document.getElementById('friends-name');
       const name = nameInput.value.trim();
       if (name) {
-        const li = document.createElement('li');
-        li.textContent = name;
-        document.getElementById('friends-list').appendChild(li);
-        nameInput.value = '';
+        try {
+          await invoke('add_friend', { name });
+          nameInput.value = '';
+          loadFriends();
+        } catch (error) {
+          console.error('Error adding friend:', error);
+          alert('Failed to add friend. Please try again.');
+        }
+      } else {
+        alert('Please enter a valid name.');
       }
     });
+
+
     // pridobivanje trenutnega uporabnika
     async function loadCurrentUser() {
       try {
@@ -134,6 +202,71 @@
         }
       });
     });
+
+    // odpiranje in zapiranje modalnega okna
+    const openExpenseModal = document.getElementById('open-expense-modal');
+    openExpenseModal.addEventListener('click', () => {
+      document.getElementById('expense-modal').classList.add('active');
+    });
+
+    const closeExpenseModal = document.getElementById('cancel-expense');
+    closeExpenseModal.addEventListener('click', () => {
+      document.getElementById('expense-modal').classList.remove('active');
+    });
+
+    // shranjevanje novega stroška
+    document.getElementById('save-expense').addEventListener('click', async () => {
+      const description = document.getElementById('expense-description').value.trim();
+      const amount = parseFloat(document.getElementById('expense-amount').value);
+      const paid_by_friend_id = document.getElementById('friend-select').value;
+      if (description && !isNaN(amount) && amount > 0) {
+        try {
+          await invoke('add_expense', { description, amount, paid});
+          alert('Expense added successfully!');
+          document.getElementById('expense-description').value = '';
+          document.getElementById('expense-amount').value = '';
+          document.getElementById('expense-modal').classList.remove('active');
+        } catch (error) {
+          console.error('Error adding expense:', error);
+          alert('Failed to add expense. Please try again.');
+        }
+      } else {
+        alert('Please enter a valid description and amount.');
+      }
+    });
+
+    // nalaganje prijateljev v izbirniku
+    async function loadFriendsForExpense() {
+      try {
+        const friends = await invoke('list_friends');
+        const friendSelect = document.getElementById('friend-select');
+        friendSelect.innerHTML = '<option value="">Select a friend</option>';
+        friends.forEach(friend => {
+          const option = document.createElement('option');
+          option.value = friend.id;
+          option.textContent = friend.name;
+          friendSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading friends for expense:', error);
+      }
+    }
+    loadFriendsForExpense();
+
+    // izbira kdo je plačal
+    async function loadCurrentUserorFriendForExpense() {
+      try {
+        const user = await invoke('get_current_user');
+        const paidBySelect = document.getElementById('expense-paid-by');
+        paidBySelect.innerHTML = `<option value="${user.id}">${user.name}</option>`;
+      } catch (error) {
+        console.error('Error loading current user for expense:', error);
+      }
+    }
+    loadCurrentUserorFriendForExpense();
+  
+
+
 
   </script>
 </body>
