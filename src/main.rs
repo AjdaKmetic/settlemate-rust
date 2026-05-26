@@ -92,7 +92,25 @@ async fn main() {
     }
 
 } */
+mod handlers;
 
-fn main() {
-    println!("Splitwise app");
+use axum::{routing::get, Router};
+use handlers::index::index;
+
+#[tokio::main]
+async fn main() {
+    let app = Router::new().route("/", get(index));
+
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+        .await
+        .unwrap();
+    println!("listening on {}", listener.local_addr().unwrap());
+    axum::serve(listener, app).await.unwrap();
 }
+
+
+
+
+
+
+

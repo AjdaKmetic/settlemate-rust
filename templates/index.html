@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <title>SettleMate</title>
+    <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+</head>
+<body>
+    <main id="screen" hx-get="/friends" hx-trigger="load"></main>
+    <button class="fab"
+        hx-get="/expense/new"
+        hx-target="#modal"
+        hx-swap="innerHTML">+</button>
+    <div id="modal"></div>
+
+    <nav class="tabbar">
+        <button hx-get="/friends" hx-target="#screen">Friends</button>
+        <button hx-get="/groups" hx-target="#screen">Groups</button>
+        <button hx-get="/activity" hx-target="#screen">Activity</button>
+        <button hx-get="/account" hx-target="#screen">Account</button>
+    </nav>
+</body>
+</html>
