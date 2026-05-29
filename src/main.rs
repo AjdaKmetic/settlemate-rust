@@ -95,9 +95,11 @@ async fn main() {
 use axum::{Router, routing::get};
 use settlemate_rust::app::state::{AppState, seed_demo};
 use settlemate_rust::database::connect;
+use settlemate_rust::handlers::account;
 use settlemate_rust::handlers::groups::list_group_members;
 use settlemate_rust::handlers::index::index;
 use settlemate_rust::handlers::users::{create_user_handler, list_users};
+use tower_http::services::ServeDir;
 
 #[tokio::main]
 async fn main() {
@@ -116,6 +118,7 @@ async fn main() {
         .route("/users", get(list_users).post(create_user_handler))
         // Primer in-memory endpoint-a: glej `src/handlers/groups.rs`.
         .route("/groups/{id}/members", get(list_group_members))
+        .nest_service("/static", ServeDir::new("static"))
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")

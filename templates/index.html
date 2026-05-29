@@ -7,24 +7,10 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <main id="screen" hx-get="/friends" hx-trigger="load"></main>
-    <!-- gumb za dodajanje stroška -->
-    <button class="fab"
-        hx-get="/expense/new"
-        hx-target="#modal"
-        hx-swap="innerHTML">
-        +
-    </button>
-    <div id="modal"></div>
-
-    <hr>
-
-    <!-- navigacija -->
-    <nav class="tabbar">
-        <button hx-get="/friends" hx-target="#screen">Friends</button>
-        <button hx-get="/groups" hx-target="#screen">Groups</button>
-        <button hx-get="/activity" hx-target="#screen">Activity</button>
-        <button hx-get="/account" hx-target="#screen">Account</button>
-    </nav>
+    <h1>SettleMate</h1>
+    <ul>
+      <li><a href="/users">Uporabniki (DB)</a></li>
+      <li><a href="/groups/1/members">Člani skupine (in-memory)</a></li>
+    </ul>
 </body>
 </html>
