@@ -3,3 +3,4 @@ pub mod balance;
 pub mod simplify;
 pub mod split;
 pub mod user_service;
+pub mod group_service;

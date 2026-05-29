@@ -2,4 +2,9 @@
 
 pub mod prelude;
 
+pub mod expense_splits;
+pub mod expenses;
+pub mod group_members;
+pub mod groups;
+pub mod payments;
 pub mod users;
