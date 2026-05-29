@@ -7,12 +7,18 @@
 </head>
 <body>
     <main id="screen" hx-get="/friends" hx-trigger="load"></main>
+    <!-- gumb za dodajanje stroška -->
     <button class="fab"
         hx-get="/expense/new"
         hx-target="#modal"
-        hx-swap="innerHTML">+</button>
+        hx-swap="innerHTML">
+        +
+    </button>
     <div id="modal"></div>
 
+    <hr>
+
+    <!-- navigacija -->
     <nav class="tabbar">
         <button hx-get="/friends" hx-target="#screen">Friends</button>
         <button hx-get="/groups" hx-target="#screen">Groups</button>
