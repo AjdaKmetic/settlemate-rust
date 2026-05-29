@@ -21,7 +21,8 @@ target
 #.idea/
 
 # SQLite database
-settlemate.db
-settlemate.db-shm
-settlemate.db-wal
+.env
+*.db
+*.db-shm
+*.db-wal
 .DS_Store
