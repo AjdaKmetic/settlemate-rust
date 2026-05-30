@@ -96,10 +96,15 @@ mod handlers;
 
 use axum::{routing::get, Router};
 use handlers::index::index;
+use handlers::account::account;
+use tower_http::services::ServeDir;
 
 #[tokio::main]
 async fn main() {
-    let app = Router::new().route("/", get(index));
+    let app = Router::new()
+    .route("/", get(index))
+    .route("/account", get(account))
+    .nest_service("/static", ServeDir::new("static"));
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
@@ -107,8 +112,6 @@ async fn main() {
     println!("listening on {}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
 }
-
-
 
 
 
