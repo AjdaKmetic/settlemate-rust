@@ -3,8 +3,13 @@ use axum::response::{Html, IntoResponse};
 
 #[derive(Template)]
 #[template(path = "index.html")]
-pub struct IndexTemplate;
+pub struct IndexTemplate {
+    pub username: String,
+}
 
 pub async fn index() -> impl IntoResponse {
-    Html(IndexTemplate.render().unwrap())
+    let template = IndexTemplate {
+        username: "Ajda".to_string(),
+    };
+    Html(template.render().unwrap())
 }

@@ -98,12 +98,16 @@ use axum::{routing::get, Router};
 use handlers::index::index;
 use handlers::account::account;
 use tower_http::services::ServeDir;
+use settlemate_rust::handlers::dashboard::dashboard;
+use settlemate_rust::handlers::activity::activity;
 
 #[tokio::main]
 async fn main() {
     let app = Router::new()
     .route("/", get(index))
     .route("/account", get(account))
+    .route("/dashboard", get(dashboard))
+    .route("/activity", get(activity))
     .nest_service("/static", ServeDir::new("static"));
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")

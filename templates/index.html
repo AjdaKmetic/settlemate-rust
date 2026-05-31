@@ -9,11 +9,20 @@
 <body>
     <header>
         <h1>SettleMate</h1>
-        <a href="/account">👤 Račun</a>
+        <a href="/account">👤 {{ username }}</a>
     </header>
-    <ul>
-      <li><a href="/users">Uporabniki (DB)</a></li>
-      <li><a href="/groups/1/members">Člani skupine (in-memory)</a></li>
-    </ul>
+    <div class="layout">
+        <nav>
+            <ul>
+                <li><a hx-get="/dashboard" hx-target="#content">Dashboard</a></li>
+                <li><a hx-get="/activity" hx-target="#content">Recent activity</a></li>
+            </ul>
+        </nav>
+        <main id="content">
+            {% include "dashboard.html" %}
+        </main>
+    </div>
+    
+
 </body>
 </html>
