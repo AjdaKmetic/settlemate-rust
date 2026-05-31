@@ -1,5 +1,47 @@
-h1 {
+header {
     background-color: tomato;
     color: beige;
-    padding: auto;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center
 }
+
+h1 {
+    margin: 0;
+}
+
+header a {
+    color: white;
+}
+
+body {
+  margin: 0;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav a {
+    text-decoration: none;
+}
+
+.layout {
+    display: flex;
+}
+
+nav {
+    width: 200px;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+
