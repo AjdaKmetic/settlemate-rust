@@ -92,12 +92,15 @@ async fn main() {
     }
 
 } */
+
+/* ko bova imeli podelane handlerje 
+
 use axum::{Router, routing::get};
 use settlemate_rust::app::state::{AppState, seed_demo};
 use settlemate_rust::database::connect;
-use settlemate_rust::handlers::groups::list_group_members;
+// use settlemate_rust::handlers::groups::list_group_members;
 use settlemate_rust::handlers::index::index;
-use settlemate_rust::handlers::users::{create_user_handler, list_users};
+// use settlemate_rust::handlers::users::{create_user_handler, list_users};
 
 #[tokio::main]
 async fn main() {
@@ -124,8 +127,11 @@ async fn main() {
     println!("listening on {}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
 }
+*/
 
+fn main() {
 
+}
 
 
 
