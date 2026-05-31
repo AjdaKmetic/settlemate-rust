@@ -4,31 +4,22 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "users")]
+#[sea_orm(table_name = "groups")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub name: String,
-    #[sea_orm(unique)]
-    pub email: String,
-    pub password_hash: String,
     pub created_at: DateTimeUtc,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::expense_splits::Entity")]
-    ExpenseSplits,
     #[sea_orm(has_many = "super::expenses::Entity")]
     Expenses,
     #[sea_orm(has_many = "super::group_members::Entity")]
     GroupMembers,
-}
-
-impl Related<super::expense_splits::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::ExpenseSplits.def()
-    }
+    #[sea_orm(has_many = "super::payments::Entity")]
+    Payments,
 }
 
 impl Related<super::expenses::Entity> for Entity {
@@ -40,6 +31,12 @@ impl Related<super::expenses::Entity> for Entity {
 impl Related<super::group_members::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::GroupMembers.def()
+    }
+}
+
+impl Related<super::payments::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Payments.def()
     }
 }
 
