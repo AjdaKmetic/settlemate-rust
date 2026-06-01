@@ -2,7 +2,7 @@ use crate::app::dto::{BalanceDto, ExpenseDto, UserDto};
 use crate::app::helpers::{expense_to_dto, name_of};
 use crate::app::state::AppData;
 use crate::models::user::{User, UserId};
-use crate::services::balance::Balance;
+use crate::services::domain::balance::Balance;
 
 pub fn add_friend(
     data: &mut AppData,

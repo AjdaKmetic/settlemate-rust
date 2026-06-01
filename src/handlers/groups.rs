@@ -7,7 +7,7 @@ use axum::{
 
 use crate::app::state::AppState;
 use crate::entities::groups;
-use crate::services::group_service::get_all_groups;
+use crate::services::db::group_service::get_all_groups;
 
 #[derive(Template)]
 #[template(path = "groups.html")]

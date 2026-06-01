@@ -7,8 +7,8 @@ use crate::models::{
     payment::Payment,
     user::UserId,
 };
-use crate::services::balance::Balance;
-use crate::services::simplify::simplify_debts;
+use crate::services::domain::balance::Balance;
+use crate::services::domain::simplify::simplify_debts;
 
 fn expenses_in_group(data: &AppData, group_id: GroupId) -> Vec<Expense> {
     data.expenses

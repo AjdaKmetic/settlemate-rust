@@ -1,4 +1,4 @@
-use crate::services::balance::Balance;
+use crate::services::domain::balance::Balance;
 use std::cmp::Ordering;
 
 use crate::models::debt::Debt;

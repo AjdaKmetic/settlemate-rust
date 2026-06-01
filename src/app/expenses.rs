@@ -3,7 +3,7 @@ use crate::app::helpers::expense_to_dto;
 use crate::app::state::AppData;
 use crate::models::expense::{Expense, ExpenseId};
 use crate::models::{group::GroupId, user::UserId};
-use crate::services::split::Split;
+use crate::services::domain::split::Split;
 
 pub fn add_expense(
     data: &mut AppData,
@@ -95,7 +95,7 @@ mod tests {
             "alice@example.com",
             "hashed_password",
         ));
-        let splits = crate::services::split::Split::new_equal(vec![1]).unwrap();
+        let splits = crate::services::domain::split::Split::new_equal(vec![1]).unwrap();
         let dto = add_expense(&mut data, "Dinner".to_string(), 20.0, 1, None, splits).unwrap();
         assert_eq!(dto.description, "Dinner");
         assert_eq!(dto.amount, 20.0);
@@ -115,7 +115,7 @@ mod tests {
             "alice@example.com",
             "hashed_password",
         ));
-        let splits = crate::services::split::Split::new_equal(vec![1]).unwrap();
+        let splits = crate::services::domain::split::Split::new_equal(vec![1]).unwrap();
         let dto = add_expense(&mut data, "Dinner".to_string(), 20.0, 1, None, splits).unwrap();
         assert_eq!(dto.description, "Dinner");
         assert_eq!(dto.amount, 20.0);
@@ -135,7 +135,7 @@ mod tests {
             "alice@example.com",
             "hashed_password",
         ));
-        let splits = crate::services::split::Split::new_equal(vec![1]).unwrap();
+        let splits = crate::services::domain::split::Split::new_equal(vec![1]).unwrap();
         let dto = add_expense(&mut data, "Dinner".to_string(), 20.0, 1, None, splits).unwrap();
         assert_eq!(dto.description, "Dinner");
         assert_eq!(dto.amount, 20.0);
@@ -155,7 +155,7 @@ mod tests {
             "alice@example.com",
             "hashed_password",
         ));
-        let splits = crate::services::split::Split::new_equal(vec![1]).unwrap();
+        let splits = crate::services::domain::split::Split::new_equal(vec![1]).unwrap();
         let _dto = add_expense(&mut data, "Dinner".to_string(), 20.0, 1, None, splits).unwrap();
         let expenses = list_expenses(&data);
         assert_eq!(expenses.len(), 1);

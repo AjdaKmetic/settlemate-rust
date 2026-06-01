@@ -4,7 +4,7 @@ use axum::{
     response::{Html, IntoResponse},
 };
 
-use crate::{app::state::AppState, services::balance::Balance};
+use crate::{app::state::AppState, services::domain::balance::Balance};
 
 #[derive(Template)]
 #[template(path = "index.html")]
