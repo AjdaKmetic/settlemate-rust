@@ -1,7 +1,3 @@
-// povezava med URL-jem, service funkcijo in HTML tamplatom
-
-// GET /groups
-
 use askama::Template;
 use axum::{
     extract::State,
@@ -22,14 +18,21 @@ struct GroupsTemplate {
 pub async fn list_groups(State(state): State<AppState>) -> impl IntoResponse {
     match get_all_groups(&state.db).await {
         Ok(groups) => {
-            Html(GroupsTemplate { groups }.render().unwrap()).into_response()
+            let template = GroupsTemplate { groups };
+
+            match template.render() {
+                Ok(html) => Html(html).into_response(),
+                Err(error) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Napaka pri renderiranju strani: {error}"),
+                )
+                    .into_response(),
+            }
         }
-        Err(error) => {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Napaka pri branju skupin: {error}"),
-            )
-                .into_response()
-        }
+        Err(error) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Napaka pri branju skupin: {error}"),
+        )
+            .into_response(),
     }
 }

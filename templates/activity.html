@@ -1,4 +1,58 @@
-<div class="activity">
-  <h2>Recent activity</h2>
-  <p>Tu bodo zadnji stroški.</p>
-</div>
+<section class="tab-panel" id="activity-panel" role="tabpanel" aria-labelledby="activity-tab">
+    <div class="section-header">
+        <h2>Activity</h2>
+    </div>
+
+    <div class="list-row">
+        <div class="activity-icon">
+            <svg class="icon-text" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/>
+                <path d="M12 6v12"/>
+            </svg>
+        </div>
+        <div class="row-info">
+            <p class="row-title">Dinner at Gostilna</p>
+            <p class="row-meta">Paid by Ana · Weekend Trip</p>
+        </div>
+        <div class="row-balance is-negative">
+            <p class="amount">-€24.80</p>
+            <p class="balance-note">your share</p>
+        </div>
+    </div>
+
+    <div class="list-row">
+        <div class="activity-icon">
+            <svg class="icon-text" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3v18h18"/>
+                <path d="M19 9l-5 5-4-4-3 3"/>
+            </svg>
+        </div>
+        <div class="row-info">
+            <p class="row-title">Train tickets</p>
+            <p class="row-meta">Paid by you · Weekend Trip</p>
+        </div>
+        <div class="row-balance is-positive">
+            <p class="amount">€64.00</p>
+            <p class="balance-note">owed back</p>
+        </div>
+    </div>
+
+    <div class="list-row last">
+        <div class="activity-icon">
+            <svg class="icon-text" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+        </div>
+        <div class="row-info">
+            <p class="row-title">Settlement received</p>
+            <p class="row-meta">Juno paid you back</p>
+        </div>
+        <div class="row-balance is-neutral">
+            <p class="amount">€18.00</p>
+            <p class="balance-note">settled</p>
+        </div>
+    </div>
+</section>

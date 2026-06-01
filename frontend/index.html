@@ -5,8 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SettleMate</title>
 <style>
+  :root {
+    --color-background: #fff3f1;
+    --color-card: #faf5f3;
+    --color-outline: #e8dbd6;
+    --color-button: #c7594a;
+    --color-button-hover: #a84839;
+    --color-text: #3d1f1a;
+  }
+
   body {
-    background-color: #f8f6f2;
+    background-color: var(--color-background);
+    color: var(--color-text);
   }
 
   .screen {
@@ -22,8 +32,8 @@
     left: 0;
     right: 0;
     height: 60px;
-    background-color: white;
-    border-top: 1px solid #ddd;
+    background-color: var(--color-card);
+    border-top: 1px solid var(--color-outline);
     display: flex;
   }
   
@@ -31,6 +41,7 @@
     flex: 1;
     border: none;
     background: none;
+    color: var(--color-text);
     font-size: 14px;
     cursor: pointer;
   }
@@ -42,13 +53,17 @@
     width: 50px;
     height: 50px;
     border-radius: 25px;
-    background-color: #007bff;
-    color: white;
+    background-color: var(--color-button);
+    color: var(--color-background);
     font-size: 24px;
     border: none;
     cursor: pointer;
     text-align: center;
     line-height: 10px;
+  }
+
+  .fab:hover {
+    background-color: var(--color-button-hover);
   }
 
   .hidden {
@@ -61,7 +76,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: white;
+    background-color: var(--color-card);
     padding: 20px;
     z-index: 1000;
     overflow-y: auto;
