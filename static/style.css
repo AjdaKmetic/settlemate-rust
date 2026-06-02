@@ -259,6 +259,9 @@ body {
     display: none;
 }
 
+.tab-add {
+    margin-left: auto;
+}
 .section-header {
     display: flex;
     justify-content: space-between;
