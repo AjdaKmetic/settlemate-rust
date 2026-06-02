@@ -7,7 +7,9 @@ use axum::{
 
 use crate::{
     app::state::AppState,
+    entities::groups,
     handlers::friends::{FriendView, users_to_friend_views},
+    services::db::group_service::get_all_groups,
     services::db::user_service::get_all_users,
     services::domain::balance::Balance,
 };
@@ -22,6 +24,7 @@ pub struct IndexTemplate {
     pub formatted_balance: String,
     pub active_tab: String,
     pub friends: Vec<FriendView>,
+    pub groups: Vec<groups::Model>,
 }
 
 #[derive(Template)]
@@ -29,10 +32,11 @@ pub struct IndexTemplate {
 pub struct TabShellTemplate {
     pub active_tab: String,
     pub friends: Vec<FriendView>,
+    pub groups: Vec<groups::Model>,
 }
 
 impl IndexTemplate {
-    fn new(username: String, balance: f64) -> Self {
+    fn new(username: String, balance: f64, groups: Vec<groups::Model>) -> Self {
         let is_positive = balance > 0.005;
         let is_negative = balance < -0.005;
 
@@ -70,6 +74,7 @@ impl IndexTemplate {
             formatted_balance,
             active_tab: "groups".to_string(),
             friends: Vec::new(),
+            groups,
         }
     }
 }
@@ -95,14 +100,24 @@ fn current_user_balance(state: &AppState) -> (String, f64) {
 
 pub async fn index(State(state): State<AppState>) -> impl IntoResponse {
     let (username, balance) = current_user_balance(&state);
-    let template = IndexTemplate::new(username, balance);
-    Html(template.render().unwrap())
+    match get_all_groups(&state.db).await {
+        Ok(groups) => {
+            let template = IndexTemplate::new(username, balance, groups);
+            Html(template.render().unwrap()).into_response()
+        }
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {e}")).into_response(),
+    }
 }
 
-fn render_tab(active_tab: &str, friends: Vec<FriendView>) -> Html<String> {
+fn render_tab(
+    active_tab: &str,
+    friends: Vec<FriendView>,
+    groups: Vec<groups::Model>,
+) -> Html<String> {
     let template = TabShellTemplate {
         active_tab: active_tab.to_string(),
         friends,
+        groups,
     };
 
     Html(template.render().unwrap())
@@ -110,15 +125,20 @@ fn render_tab(active_tab: &str, friends: Vec<FriendView>) -> Html<String> {
 
 pub async fn tabs_friends(State(state): State<AppState>) -> impl IntoResponse {
     match get_all_users(&state.db).await {
-        Ok(users) => render_tab("friends", users_to_friend_views(users)).into_response(),
+        Ok(users) => {
+            render_tab("friends", users_to_friend_views(users), Vec::new()).into_response()
+        }
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {e}")).into_response(),
     }
 }
 
-pub async fn tabs_groups(State(_state): State<AppState>) -> impl IntoResponse {
-    render_tab("groups", Vec::new())
+pub async fn tabs_groups(State(state): State<AppState>) -> impl IntoResponse {
+    match get_all_groups(&state.db).await {
+        Ok(groups) => render_tab("groups", Vec::new(), groups).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {e}")).into_response(),
+    }
 }
 
 pub async fn tabs_activity(State(_state): State<AppState>) -> impl IntoResponse {
-    render_tab("activity", Vec::new())
+    render_tab("activity", Vec::new(), Vec::new())
 }
