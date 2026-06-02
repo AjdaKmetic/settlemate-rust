@@ -1,6 +1,6 @@
-pub mod index;
+pub mod account;
+pub mod activity;
+pub mod dashboard;
 pub mod friends;
 pub mod groups;
-pub mod activity;
-pub mod account;
-pub mod dashboard;
+pub mod index;

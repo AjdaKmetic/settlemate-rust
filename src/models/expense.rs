@@ -1,5 +1,5 @@
 use crate::models::{group::GroupId, user::UserId};
-use crate::services::split::Split;
+use crate::services::domain::split::Split;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub type ExpenseId = u64;

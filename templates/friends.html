@@ -1,0 +1,31 @@
+<section class="tab-panel" id="friends-panel" role="tabpanel" aria-labelledby="friends-tab"
+         data-panel="friends">
+    <div class="section-header">
+        <h2>Friends</h2>
+        <button class="btn-create" type="button"
+                hx-get="/friends/form"
+                hx-target="#friend-form-slot"
+                hx-swap="innerHTML">
+            + Add Friend
+        </button>
+    </div>
+
+    <div id="friend-form-slot">
+    </div>
+
+    {% for friend in friends %}
+    <div class="list-row{% if loop.last %} last{% endif %}">
+        <div class="friend-avatar">{{ friend.initials }}</div>
+        <div class="row-info">
+            <p class="row-title">{{ friend.name }}</p>
+            <p class="row-meta">{{ friend.email }}</p>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if friends.is_empty() %}
+    <div class="empty-state">
+        <p>No friends added yet.</p>
+    </div>
+    {% endif %}
+</section>

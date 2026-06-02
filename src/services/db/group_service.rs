@@ -4,8 +4,8 @@ use sea_orm::{
     QueryFilter, Set,
 };
 
-use groups::Entity as Groups;
 use group_members::Entity as GroupMembers;
+use groups::Entity as Groups;
 use users::Entity as Users;
 
 pub async fn create_group(
@@ -20,9 +20,7 @@ pub async fn create_group(
     new_group.insert(db).await
 }
 
-pub async fn get_all_groups(
-    db: &DatabaseConnection,
-) -> Result<Vec<groups::Model>, sea_orm::DbErr> {
+pub async fn get_all_groups(db: &DatabaseConnection) -> Result<Vec<groups::Model>, sea_orm::DbErr> {
     Groups::find().all(db).await
 }
 

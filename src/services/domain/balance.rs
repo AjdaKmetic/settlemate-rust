@@ -1,5 +1,5 @@
 use crate::models::{expense::Expense, group::GroupId, payment::Payment, user::UserId};
-use crate::services::split::Split;
+use crate::services::domain::split::Split;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -180,7 +180,7 @@ impl Balance {
 mod tests {
     use super::*;
     use crate::models::expense::Expense;
-    use crate::services::split::Split;
+    use crate::services::domain::split::Split;
 
     #[test]
     fn test_single_expense_equal_split() {

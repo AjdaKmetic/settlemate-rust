@@ -1,8 +1,8 @@
 use crate::app::dto::{BalanceDto, DebtDto};
 use crate::app::helpers::{debt_to_dto, name_of};
 use crate::app::state::AppData;
-use crate::services::balance::Balance;
-use crate::services::simplify::simplify_debts;
+use crate::services::domain::balance::Balance;
+use crate::services::domain::simplify::simplify_debts;
 
 pub fn get_balances(data: &AppData) -> Vec<BalanceDto> {
     let balance = Balance::balances_with_payments(&data.expenses, &data.payments);

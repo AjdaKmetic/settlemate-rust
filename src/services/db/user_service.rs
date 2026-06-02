@@ -1,8 +1,8 @@
-use super::auth_service::{hash_password, verify_password};
+use crate::services::db::auth_service::{hash_password, verify_password};
 use crate::{entities::users, models::user::UserId};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, DeleteResult, EntityTrait,
-    IntoActiveModel, QueryFilter, Set,
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, DeleteResult, EntityTrait, IntoActiveModel,
+    QueryFilter, Set,
 };
 use users::Entity as Users;
 
