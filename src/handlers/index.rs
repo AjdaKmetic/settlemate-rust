@@ -1,10 +1,16 @@
 use askama::Template;
 use axum::{
     extract::State,
+    http::StatusCode,
     response::{Html, IntoResponse},
 };
 
-use crate::{app::state::AppState, services::domain::balance::Balance};
+use crate::{
+    app::state::AppState,
+    handlers::friends::{FriendView, users_to_friend_views},
+    services::db::user_service::get_all_users,
+    services::domain::balance::Balance,
+};
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -15,12 +21,14 @@ pub struct IndexTemplate {
     pub balance_secondary: &'static str,
     pub formatted_balance: String,
     pub active_tab: String,
+    pub friends: Vec<FriendView>,
 }
 
 #[derive(Template)]
 #[template(path = "tab_shell.html")]
 pub struct TabShellTemplate {
     pub active_tab: String,
+    pub friends: Vec<FriendView>,
 }
 
 impl IndexTemplate {
@@ -61,6 +69,7 @@ impl IndexTemplate {
             balance_secondary,
             formatted_balance,
             active_tab: "groups".to_string(),
+            friends: Vec::new(),
         }
     }
 }
@@ -90,22 +99,26 @@ pub async fn index(State(state): State<AppState>) -> impl IntoResponse {
     Html(template.render().unwrap())
 }
 
-fn render_tab(active_tab: &str) -> Html<String> {
+fn render_tab(active_tab: &str, friends: Vec<FriendView>) -> Html<String> {
     let template = TabShellTemplate {
         active_tab: active_tab.to_string(),
+        friends,
     };
 
     Html(template.render().unwrap())
 }
 
-pub async fn tabs_friends(State(_state): State<AppState>) -> impl IntoResponse {
-    render_tab("friends")
+pub async fn tabs_friends(State(state): State<AppState>) -> impl IntoResponse {
+    match get_all_users(&state.db).await {
+        Ok(users) => render_tab("friends", users_to_friend_views(users)).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {e}")).into_response(),
+    }
 }
 
 pub async fn tabs_groups(State(_state): State<AppState>) -> impl IntoResponse {
-    render_tab("groups")
+    render_tab("groups", Vec::new())
 }
 
 pub async fn tabs_activity(State(_state): State<AppState>) -> impl IntoResponse {
-    render_tab("activity")
+    render_tab("activity", Vec::new())
 }

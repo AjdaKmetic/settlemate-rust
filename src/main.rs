@@ -6,6 +6,7 @@ use settlemate_rust::database::connect;
 use settlemate_rust::handlers::{
     account::account,
     activity::activity,
+    friends::{add_friend, friend_form, list_friends},
     groups::list_groups,
     index::{index, tabs_activity, tabs_friends, tabs_groups},
 };
@@ -19,6 +20,8 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/groups", get(list_groups))
+        .route("/friends/form", get(friend_form))
+        .route("/friends", get(list_friends).post(add_friend))
         .route("/tabs/friends", get(tabs_friends))
         .route("/tabs/groups", get(tabs_groups))
         .route("/tabs/activity", get(tabs_activity))
