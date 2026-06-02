@@ -10,10 +10,15 @@ use settlemate_rust::handlers::{
     groups::{add_group, group_detail, group_form, list_groups},
     index::{index, tabs_activity, tabs_friends, tabs_groups},
 };
+use migration::{Migrator, MigratorTrait};
 
 #[tokio::main]
 async fn main() {
+
+
     let db = connect().await.expect("Povezava z bazo ni uspela.");
+    Migrator::up(&db, None).await.expect("Migracije niso uspele.");
+
 
     let state = AppState::new(db);
 
