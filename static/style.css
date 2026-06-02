@@ -188,7 +188,7 @@ body {
 }
 
 .balance-secondary,
-.empty-state p {
+.secondary-text {
     font-size: 0.78rem;
     font-family: 'Inter', sans-serif;
     color: var(--balance-secondary, var(--balance-neutral-label));
@@ -301,7 +301,8 @@ body {
     margin-bottom: 8px;
 }
 
-.inline-form input {
+.inline-form input[type="text"],
+.inline-form input[type="email"] {
     flex: 1;
     min-width: 0;
     padding: 8px 12px;
@@ -313,9 +314,26 @@ body {
     color: var(--color-text);
 }
 
-.inline-form input:focus {
+.inline-form input[type="text"]:focus,
+.inline-form input[type="email"]:focus {
     outline: none;
     border-color: var(--color-primary);
+}
+
+.group-form {
+    align-items: stretch;
+    flex-direction: column;
+}
+
+.group-fields {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .btn-cancel {
@@ -393,6 +411,20 @@ body {
     color: var(--category-friends-text);
     font-size: 0.78rem;
     font-weight: 700;
+}
+
+.friend-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 10px;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
 }
 
 .activity-icon {

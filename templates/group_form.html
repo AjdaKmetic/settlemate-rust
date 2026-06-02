@@ -1,0 +1,43 @@
+<form hx-post="/groups"
+      hx-target="#groups-list"
+      hx-swap="beforeend"
+      hx-on::after-request="document.getElementById('groups-empty-state')?.remove(); this.reset()"
+      class="inline-form group-form">
+
+      <div class="group-fields">
+
+        <input
+            type="text"
+            name="name"
+            placeholder="Group name"
+            required
+        >
+
+        <div class="friend-selection secondary-text">
+            <label>Add friends to this group</label>
+
+            {% for friend in friends %}
+                <label class="checkbox-row">
+                    <input
+                        type="checkbox"
+                        name="friend_ids"
+                        value="{{ friend.id }}"
+                    >
+                    {{ friend.name }}
+                </label>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <div class="form-actions">
+        <button class="btn-create" type="submit">
+            Create
+        </button>
+
+        <button class="btn-cancel" type="button">
+            Cancel
+        </button>
+    </div>
+
+</form>
