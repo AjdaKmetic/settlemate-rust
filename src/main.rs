@@ -1,4 +1,4 @@
-use axum::{Router, routing::get};
+use axum::{Router, routing::get, routing::post};
 use tower_http::services::ServeDir;
 
 use settlemate_rust::app::state::AppState;
@@ -9,6 +9,7 @@ use settlemate_rust::handlers::{
     friends::{add_friend, friend_form, list_friends},
     groups::{add_group, group_detail, group_form, list_groups},
     index::{index, tabs_activity, tabs_friends, tabs_groups},
+    expenses::{new_expense, add_expense},
 };
 use migration::{Migrator, MigratorTrait};
 
@@ -34,6 +35,8 @@ async fn main() {
         .route("/tabs/activity", get(tabs_activity))
         .route("/account", get(account))
         .route("/activity", get(activity))
+        .route("/expenses/new", get(new_expense))
+        .route("/expenses", post(add_expense))
         .nest_service("/static", ServeDir::new("static"))
         .with_state(state);
 

@@ -1,6 +1,6 @@
 use crate::app::dto::{DebtDto, ExpenseDto, PaymentDto};
 use crate::app::state::AppData;
-use crate::models::{debt::Debt, expense::Expense, group::GroupId, payment::Payment, user::UserId};
+use crate::models::{debt::Debt, expenses::Expense, group::GroupId, payment::Payment, user::UserId};
 
 pub fn name_of(data: &AppData, user_id: UserId) -> String {
     data.users

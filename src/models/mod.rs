@@ -1,5 +1,5 @@
 pub mod debt;
-pub mod expense;
+pub mod expenses;
 pub mod group;
 pub mod payment;
 pub mod user;

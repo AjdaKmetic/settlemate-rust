@@ -1,0 +1,19 @@
+<div class="balance-card"
+    {% if balance > 0.0 %}balance-positive
+    {% else if balance < 0.0 %}balance-negative
+    {% else %}balance-neutral{% endif %}>
+    <div class="balance-info">
+        "<div class="balance-label">
+            {% if balance > 0.0 %}
+                You owe
+            {% else if balance < 0.0 %}
+                You are owed
+            {% else %}
+                All settled up
+            {% endif %}
+        </div>
+        <div class="balance-amount">
+            {{ balance }} €
+        </div>
+    </div>
+</div>

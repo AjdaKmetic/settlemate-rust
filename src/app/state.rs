@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use sea_orm::DatabaseConnection;
 
 use crate::models::{
-    expense::{Expense, ExpenseId},
+    expenses::{Expense, ExpenseId},
     group::{Group, GroupId},
     payment::{Payment, PaymentId},
     user::{User, UserId},

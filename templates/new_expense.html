@@ -1,0 +1,49 @@
+<div class="modal-overlay">
+    <div class="modal-card">
+        <div class="section-header">
+            <h2>Add expense</h2>
+        </div>
+        <form hx-post="/expenses" hx-target="#modal-slot" hx-swap="innerHTML"
+            hx-on::after-request="document.getElementById('modal-slot').innerHTML=''">
+            <div class="group-fields">
+                <label>
+                    Description
+                    <input type="text" name="description" required>
+                </label>
+                <label>
+                    Split with
+                    <select name="split_with" required>
+                        {% for friend in friends %}
+                            {% if friend.id != current_user_id %} 
+                                <option value="{{ friend.id }}">{{ friend.name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    Paid by
+                    <select name="paid_by" required>
+                        {% for friend in friends %}
+                            <option value="{{ friend.id }}" {% if friend.id == current_user_id %}selected{% endif %}>{{ friend.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>
+                    Amount
+                    <input type="number" name="amount" step="0.01" required>
+                    <span>€</span>
+                </label>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-cancel"
+                    onclick="document.getElementById('modal-slot').innerHTML=''">
+                    Cancel
+                </button>
+                <button type="submit" class="btn-create">
+                    Add Expense
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

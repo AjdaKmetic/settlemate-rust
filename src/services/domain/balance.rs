@@ -1,4 +1,4 @@
-use crate::models::{expense::Expense, group::GroupId, payment::Payment, user::UserId};
+use crate::models::{expenses::Expense, group::GroupId, payment::Payment, user::UserId};
 use crate::services::domain::split::Split;
 use std::collections::HashMap;
 
@@ -179,7 +179,7 @@ impl Balance {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::expense::Expense;
+    use crate::models::expenses::Expense;
     use crate::services::domain::split::Split;
 
     #[test]

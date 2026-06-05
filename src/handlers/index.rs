@@ -12,6 +12,7 @@ use crate::{
     services::db::group_service::get_all_groups,
     services::db::user_service::get_all_users,
     services::domain::balance::Balance,
+    services::db::expense_service::get_balance,
 };
 
 #[derive(Template)]
@@ -79,27 +80,24 @@ impl IndexTemplate {
     }
 }
 
-fn current_user_balance(state: &AppState) -> (String, f64) {
-    let data = state.data.lock().unwrap();
-    let Some(current_user_id) = data.current_user_id else {
-        return ("Ajda".to_string(), 120.50);
-    };
-
-    let username = data
-        .users
-        .iter()
-        .find(|user| user.id == current_user_id)
-        .map(|user| user.name().to_string())
-        .unwrap_or_else(|| "Ajda".to_string());
-
-    let balances = Balance::balances_with_payments(&data.expenses, &data.payments);
-    let balance = balances.get(&current_user_id).copied().unwrap_or(0.0);
-
-    (username, balance)
+async fn current_user_balance(state: &AppState) -> (String, f64) {
+    let users = get_all_users(&state.db).await.unwrap_or_default();
+    println!("Users in DB: {:?}", users);
+    match users.iter().find(|u| u.name == "Ajda") {
+        Some(user) => {
+            let balance = get_balance(&state.db, user.id).await.unwrap_or(0.0);
+            println!("Balance for user {}: {}", user.name, balance);
+            (user.name.clone(), balance)
+        }
+        None => {
+            println!("User 'Ajda' not found in the database.");
+            ("Guest".to_string(), 0.0)
+        }
+    }
 }
 
 pub async fn index(State(state): State<AppState>) -> impl IntoResponse {
-    let (username, balance) = current_user_balance(&state);
+    let (username, balance) = current_user_balance(&state).await;
     match get_all_groups(&state.db).await {
         Ok(groups) => {
             let template = IndexTemplate::new(username, balance, groups);

@@ -13,3 +13,4 @@ axum = "0.8.9"
 askama = "0.16.0"
 tower-http = { version = "0.6", features = ["fs"] }
 migration = { path = "migration" }
+chrono = "0.4.45"

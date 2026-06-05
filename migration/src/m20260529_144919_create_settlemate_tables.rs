@@ -73,7 +73,7 @@ impl MigrationTrait for Migration {
                     .col(string(Expenses::Description).not_null())
                     .col(double(Expenses::Amount).not_null())
                     .col(integer(Expenses::PaidBy).not_null())
-                    .col(integer(Expenses::GroupId))
+                    .col(integer_null(Expenses::GroupId))
                     .col(string(Expenses::SplitType).not_null())
                     .col(
                         timestamp(Expenses::CreatedAt)

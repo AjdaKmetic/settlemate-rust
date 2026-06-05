@@ -1,7 +1,7 @@
 use crate::app::dto::ExpenseDto;
 use crate::app::helpers::expense_to_dto;
 use crate::app::state::AppData;
-use crate::models::expense::{Expense, ExpenseId};
+use crate::models::expenses::{Expense, ExpenseId};
 use crate::models::{group::GroupId, user::UserId};
 use crate::services::domain::split::Split;
 

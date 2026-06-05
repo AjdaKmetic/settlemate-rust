@@ -2,7 +2,7 @@ use crate::app::dto::{BalanceDto, DebtDto, ExpenseDto, GroupDto};
 use crate::app::helpers::{debt_to_dto, expense_to_dto, name_of};
 use crate::app::state::AppData;
 use crate::models::{
-    expense::Expense,
+    expenses::Expense,
     group::{Group, GroupId},
     payment::Payment,
     user::UserId,

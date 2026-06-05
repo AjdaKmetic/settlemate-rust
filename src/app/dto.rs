@@ -1,4 +1,4 @@
-use crate::models::{expense::ExpenseId, group::GroupId, user::UserId};
+use crate::models::{expenses::ExpenseId, group::GroupId, user::UserId};
 use serde::Serialize;
 
 #[derive(Serialize)]

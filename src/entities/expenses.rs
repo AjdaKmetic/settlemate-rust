@@ -12,7 +12,7 @@ pub struct Model {
     #[sea_orm(column_type = "Double")]
     pub amount: f64,
     pub paid_by: i32,
-    pub group_id: i32,
+    pub group_id: Option<i32>,
     pub split_type: String,
     pub created_at: DateTimeUtc,
 }
