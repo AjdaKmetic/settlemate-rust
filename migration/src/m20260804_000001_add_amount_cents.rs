@@ -1,4 +1,7 @@
-use sea_orm_migration::{prelude::*, schema::integer_null};
+use sea_orm_migration::{
+    prelude::*,
+    schema::{double, integer_null},
+};
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -57,10 +60,88 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
+        manager
+            .alter_table(
+                Table::alter()
+                    .table(Expenses::Table)
+                    .drop_column(Expenses::Amount)
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .alter_table(
+                Table::alter()
+                    .table(ExpenseSplits::Table)
+                    .drop_column(ExpenseSplits::Amount)
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .alter_table(
+                Table::alter()
+                    .table(Payments::Table)
+                    .drop_column(Payments::Amount)
+                    .to_owned(),
+            )
+            .await?;
+
         Ok(())
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .alter_table(
+                Table::alter()
+                    .table(Expenses::Table)
+                    .add_column(double(Expenses::Amount).default(0.0))
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .alter_table(
+                Table::alter()
+                    .table(ExpenseSplits::Table)
+                    .add_column(double(ExpenseSplits::Amount).default(0.0))
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .alter_table(
+                Table::alter()
+                    .table(Payments::Table)
+                    .add_column(double(Payments::Amount).default(0.0))
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .get_connection()
+            .execute_unprepared(
+                "UPDATE expenses
+                 SET amount = amount_cents / 100.0",
+            )
+            .await?;
+
+        manager
+            .get_connection()
+            .execute_unprepared(
+                "UPDATE expense_splits
+                 SET amount = amount_cents / 100.0",
+            )
+            .await?;
+
+        manager
+            .get_connection()
+            .execute_unprepared(
+                "UPDATE payments
+                 SET amount = amount_cents / 100.0",
+            )
+            .await?;
+
         manager
             .alter_table(
                 Table::alter()
@@ -95,17 +176,20 @@ impl MigrationTrait for Migration {
 #[derive(DeriveIden)]
 enum Expenses {
     Table,
+    Amount,
     AmountCents,
 }
 
 #[derive(DeriveIden)]
 enum ExpenseSplits {
     Table,
+    Amount,
     AmountCents,
 }
 
 #[derive(DeriveIden)]
 enum Payments {
     Table,
+    Amount,
     AmountCents,
 }

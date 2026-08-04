@@ -37,7 +37,6 @@ pub struct TabShellTemplate {
 
 impl IndexTemplate {
     fn new(username: String, balance_cents: i64, groups: Vec<groups::Model>) -> Self {
-        let balance = balance_cents as f64 / 100.0;
         let is_positive = balance_cents > 0;
         let is_negative = balance_cents < 0;
 
