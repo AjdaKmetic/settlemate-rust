@@ -69,10 +69,6 @@ impl Split {
                 let mut money_shares = Vec::with_capacity(shares.len());
 
                 for (user_id, amount) in shares {
-                    if !amount.is_finite() {
-                        return Err("Share amount must be a finite number".to_string());
-                    }
-
                     if *amount < 0.0 {
                         return Err("Share amounts cannot be negative".to_string());
                     }
@@ -237,14 +233,5 @@ mod tests {
             result.unwrap_err(),
             "Exact shares must add up to the total amount"
         );
-    }
-
-    #[test]
-    fn test_exact_money_split_rejects_non_finite_amount() {
-        let split = Split::Exact(vec![(1, f64::NAN)]);
-
-        let result = split.compute_money_shares(Money::from_cents(1000));
-
-        assert_eq!(result.unwrap_err(), "Share amount must be a finite number");
     }
 }

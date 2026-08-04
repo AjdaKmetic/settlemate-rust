@@ -98,9 +98,11 @@ impl Neg for Money {
 
 impl fmt::Display for Money {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let euros = self.cents / 100;
-        let cents = self.cents.abs() % 100;
-        write!(f, "€{}.{}", euros, format!("{:02}", cents))
+        let absolute_cents = self.cents.abs();
+        let euros = absolute_cents / 100;
+        let cents = absolute_cents % 100;
+        let sign = if self.cents < 0 { "-" } else { "" };
+        write!(f, "{}{}.{:02} €", sign, euros, cents)
     }
 }
 
@@ -159,5 +161,34 @@ mod tests {
         let money = Money::from_cents(150);
         let result = -money;
         assert_eq!(result.cents(), -150);
+    }
+
+    #[test]
+    fn test_display_formats_positive_and_negative_amounts() {
+        let positive_money = Money::from_cents(12345);
+        let negative_money = Money::from_cents(-6789);
+
+        assert_eq!(format!("{}", positive_money), "123.45 €");
+        assert_eq!(format!("{}", negative_money), "-67.89 €");
+    }
+
+    #[test]
+    fn test_split_equal_preserves_every_cent() {
+        let amount = Money::from_cents(1000);
+
+        let shares = amount.split_equal(3).unwrap();
+
+        assert_eq!(
+            shares,
+            vec![
+                Money::from_cents(334),
+                Money::from_cents(333),
+                Money::from_cents(333),
+            ]
+        );
+
+        let total: i64 = shares.iter().map(|share| share.cents()).sum();
+
+        assert_eq!(total, 1000);
     }
 }
