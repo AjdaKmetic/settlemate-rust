@@ -27,9 +27,6 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(db: DatabaseConnection) -> Self {
-        Self {
-            db,
-        }
+        Self { db }
     }
 }
-

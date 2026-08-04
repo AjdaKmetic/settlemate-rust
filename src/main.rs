@@ -1,25 +1,24 @@
 use axum::{Router, routing::get, routing::post};
 use tower_http::services::ServeDir;
 
+use migration::{Migrator, MigratorTrait};
 use settlemate_rust::app::state::AppState;
 use settlemate_rust::database::connect;
 use settlemate_rust::handlers::{
     account::account,
     activity::activity,
+    expenses::{add_expense, new_expense},
     friends::{add_friend, friend_form, list_friends},
     groups::{add_group, group_detail, group_form, list_groups},
     index::{index, tabs_activity, tabs_friends, tabs_groups},
-    expenses::{new_expense, add_expense},
 };
-use migration::{Migrator, MigratorTrait};
 
 #[tokio::main]
 async fn main() {
-
-
     let db = connect().await.expect("Povezava z bazo ni uspela.");
-    Migrator::up(&db, None).await.expect("Migracije niso uspele.");
-
+    Migrator::up(&db, None)
+        .await
+        .expect("Migracije niso uspele.");
 
     let state = AppState::new(db);
 

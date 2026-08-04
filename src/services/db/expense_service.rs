@@ -1,19 +1,18 @@
-use sea_orm::{DatabaseConnection, ActiveModelTrait, Set, ColumnTrait, EntityTrait, QueryFilter};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 
-use crate::{entities::{expense_splits, expenses}};
+use crate::entities::{expense_splits, expenses};
 
 pub struct NewSplit {
     pub user_id: i32,
     pub amount: f64,
 }
 
-pub async fn create_expense (
+pub async fn create_expense(
     db: &DatabaseConnection,
     description: String,
     amount: f64,
     paid_by: i32,
     splits: Vec<NewSplit>,
-
 ) -> Result<(), sea_orm::DbErr> {
     let expense = expenses::ActiveModel {
         description: Set(description),

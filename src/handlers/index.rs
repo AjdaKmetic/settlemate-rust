@@ -9,10 +9,9 @@ use crate::{
     app::state::AppState,
     entities::groups,
     handlers::friends::{FriendView, users_to_friend_views},
+    services::db::expense_service::get_balance,
     services::db::group_service::get_all_groups,
     services::db::user_service::get_all_users,
-    services::domain::balance::Balance,
-    services::db::expense_service::get_balance,
 };
 
 #[derive(Template)]

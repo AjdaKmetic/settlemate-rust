@@ -8,7 +8,9 @@ use serde::Deserialize;
 
 use crate::app::state::AppState;
 use crate::entities::{groups, users};
-use crate::services::db::group_service::{create_group, find_group_by_id, get_all_groups, add_member_to_group};
+use crate::services::db::group_service::{
+    add_member_to_group, create_group, find_group_by_id, get_all_groups,
+};
 use crate::services::db::user_service::get_all_users;
 
 #[derive(Template)]
@@ -59,17 +61,19 @@ pub async fn group_form(State(state): State<AppState>) -> impl IntoResponse {
         Ok(friends) => {
             let template = GroupFormTemplate { friends };
 
-            match template.render() { // predlogo spremeni v HTML String (vrne Result<String, Err>)
+            match template.render() {
+                // predlogo spremeni v HTML String (vrne Result<String, Err>)
                 Ok(html) => Html(html).into_response(),
                 Err(e) => {
                     (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {e}")).into_response()
                 }
             }
         }
-        Err(e) => {
-            (StatusCode::INTERNAL_SERVER_ERROR, format!("Error while loading friends: {e}"))
-                .into_response()
-        }
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Error while loading friends: {e}"),
+        )
+            .into_response(),
     }
 }
 

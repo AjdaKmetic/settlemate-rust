@@ -1,18 +1,16 @@
 use askama::Template;
 use axum::{
-    extract::State,
-    response::{Html, IntoResponse},
     Form,
+    extract::State,
     http::StatusCode,
+    response::{Html, IntoResponse},
 };
 use serde::Deserialize;
 
-use crate::app::{current_user, state::AppState};
+use crate::app::state::AppState;
 use crate::entities::users;
+use crate::services::db::expense_service::{NewSplit, create_expense};
 use crate::services::db::user_service::get_all_users;
-use crate::services::db::expense_service::{
-    create_expense, NewSplit,
-};
 
 #[derive(Template)]
 #[template(path = "new_expense.html")]
@@ -37,7 +35,10 @@ pub async fn new_expense(State(state): State<AppState>) -> impl IntoResponse {
         .map(|u| u.id)
         .unwrap_or(1);
 
-    let template = NewExpenseTemplate { friends: users, current_user_id };
+    let template = NewExpenseTemplate {
+        friends: users,
+        current_user_id,
+    };
 
     Html(template.render().unwrap())
 }
@@ -52,11 +53,10 @@ pub async fn add_expense(
         .find(|u| u.name == "Ajda")
         .map(|u| u.id)
         .unwrap_or(1);
-    let other_user_id = users.iter().find(|u| u.id != current_user_id).map(|u| u.id).unwrap_or(form.paid_by);
-    
+
     let half = form.amount / 2.0;
 
-    let splits = vec! [
+    let splits = vec![
         NewSplit {
             user_id: current_user_id,
             amount: half,
@@ -74,9 +74,13 @@ pub async fn add_expense(
         form.paid_by,
         splits,
     )
-    .await {
+    .await
+    {
         Ok(_) => {
-            print!("Expense created successfully: paid_by = {}, amount = {}", form.paid_by, form.amount);
+            print!(
+                "Expense created successfully: paid_by = {}, amount = {}",
+                form.paid_by, form.amount
+            );
             Html(String::new()).into_response()
         }
         Err(e) => {
@@ -84,8 +88,4 @@ pub async fn add_expense(
             (StatusCode::INTERNAL_SERVER_ERROR, format!("Error {e} !")).into_response()
         }
     }
-
-
-    
 }
-
