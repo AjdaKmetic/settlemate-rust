@@ -11,7 +11,7 @@ pub struct Model {
     pub expense_id: i32,
     pub user_id: i32,
     #[sea_orm(column_type = "Double")]
-    pub amount: f64,
+    pub amount_cents: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

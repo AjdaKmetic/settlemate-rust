@@ -36,9 +36,10 @@ pub struct TabShellTemplate {
 }
 
 impl IndexTemplate {
-    fn new(username: String, balance: f64, groups: Vec<groups::Model>) -> Self {
-        let is_positive = balance > 0.005;
-        let is_negative = balance < -0.005;
+    fn new(username: String, balance_cents: i64, groups: Vec<groups::Model>) -> Self {
+        let balance = balance_cents as f64 / 100.0;
+        let is_positive = balance_cents > 0;
+        let is_negative = balance_cents < 0;
 
         let (balance_state_class, balance_label, balance_secondary) = if is_positive {
             (
@@ -60,11 +61,12 @@ impl IndexTemplate {
             )
         };
 
-        let formatted_balance = if is_negative {
-            format!("-€{:.2}", balance.abs())
-        } else {
-            format!("€{:.2}", balance.abs())
-        };
+        let absolute = balance_cents.unsigned_abs();
+        let euros = absolute / 100;
+        let cents = absolute % 100;
+        let sign = if balance_cents < 0 { "-" } else { "" };
+
+        let formatted_balance = format!("{sign}€{euros}.{cents:02}");
 
         Self {
             username,
@@ -79,18 +81,18 @@ impl IndexTemplate {
     }
 }
 
-async fn current_user_balance(state: &AppState) -> (String, f64) {
+async fn current_user_balance(state: &AppState) -> (String, i64) {
     let users = get_all_users(&state.db).await.unwrap_or_default();
     println!("Users in DB: {:?}", users);
     match users.iter().find(|u| u.name == "Ajda") {
         Some(user) => {
-            let balance = get_balance(&state.db, user.id).await.unwrap_or(0.0);
+            let balance = get_balance(&state.db, user.id).await.unwrap_or(0);
             println!("Balance for user {}: {}", user.name, balance);
             (user.name.clone(), balance)
         }
         None => {
             println!("User 'Ajda' not found in the database.");
-            ("Guest".to_string(), 0.0)
+            ("Guest".to_string(), 0)
         }
     }
 }

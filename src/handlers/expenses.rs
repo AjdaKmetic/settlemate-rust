@@ -54,38 +54,40 @@ pub async fn add_expense(
         .map(|u| u.id)
         .unwrap_or(1);
 
-    let half = form.amount / 2.0;
+    if form.amount <= 0.0 {
+        return (StatusCode::BAD_REQUEST, "Amount must be a positive number").into_response();
+    }
+
+    let amount_cents = (form.amount * 100.0).round() as i64;
+
+    let current_user_share = amount_cents / 2;
+    let friend_share = amount_cents - current_user_share;
 
     let splits = vec![
         NewSplit {
             user_id: current_user_id,
-            amount: half,
+            amount_cents: current_user_share,
         },
         NewSplit {
             user_id: form.split_with,
-            amount: half,
+            amount_cents: friend_share,
         },
     ];
 
     match create_expense(
         &state.db,
         form.description,
-        form.amount,
+        amount_cents,
         form.paid_by,
         splits,
     )
     .await
     {
-        Ok(_) => {
-            print!(
-                "Expense created successfully: paid_by = {}, amount = {}",
-                form.paid_by, form.amount
-            );
-            Html(String::new()).into_response()
-        }
-        Err(e) => {
-            println!("Error creating expense: {e}");
-            (StatusCode::INTERNAL_SERVER_ERROR, format!("Error {e} !")).into_response()
-        }
+        Ok(_) => (StatusCode::OK, "Expense added successfully").into_response(),
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Error adding expense: {e}"),
+        )
+            .into_response(),
     }
 }
