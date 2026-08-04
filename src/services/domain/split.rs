@@ -1,4 +1,4 @@
-use crate::models::user::UserId;
+use crate::models::{money::Money, user::UserId};
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum Split {
@@ -38,10 +38,58 @@ impl Split {
             Split::Exact(shares) => shares.clone(),
         }
     }
+
     pub fn participants(&self) -> Vec<UserId> {
         match self {
             Split::Equal(user_ids) => user_ids.clone(),
             Split::Exact(shares) => shares.iter().map(|(user_id, _)| *user_id).collect(),
+        }
+    }
+
+    pub fn compute_money_shares(
+        &self,
+        total_amount: Money,
+    ) -> Result<Vec<(UserId, Money)>, String> {
+        match self {
+            Split::Equal(user_ids) => {
+                if user_ids.is_empty() {
+                    return Err("Equal split must have at least one participant".to_string());
+                }
+
+                let amounts = total_amount.split_equal(user_ids.len())?;
+
+                Ok(user_ids.iter().copied().zip(amounts).collect())
+            }
+
+            Split::Exact(shares) => {
+                if shares.is_empty() {
+                    return Err("Exact split must have at least one participant".to_string());
+                }
+
+                let mut money_shares = Vec::with_capacity(shares.len());
+
+                for (user_id, amount) in shares {
+                    if !amount.is_finite() {
+                        return Err("Share amount must be a finite number".to_string());
+                    }
+
+                    if *amount < 0.0 {
+                        return Err("Share amounts cannot be negative".to_string());
+                    }
+
+                    let cents = (*amount * 100.0).round() as i64;
+
+                    money_shares.push((*user_id, Money::from_cents(cents)));
+                }
+
+                let split_total: i64 = money_shares.iter().map(|(_, money)| money.cents()).sum();
+
+                if split_total != total_amount.cents() {
+                    return Err("Exact shares must add up to the total amount".to_string());
+                }
+
+                Ok(money_shares)
+            }
         }
     }
 }
@@ -141,5 +189,62 @@ mod tests {
 
         assert!(split.is_err());
         assert_eq!(split.unwrap_err(), "Share amounts cannot be negative");
+    }
+
+    #[test]
+    fn test_equal_money_split_preserves_every_cent() {
+        let split = Split::new_equal(vec![1, 2, 3]).unwrap();
+
+        let shares = split.compute_money_shares(Money::from_cents(1000)).unwrap();
+
+        assert_eq!(
+            shares,
+            vec![
+                (1, Money::from_cents(334)),
+                (2, Money::from_cents(333)),
+                (3, Money::from_cents(333)),
+            ]
+        );
+
+        let total: i64 = shares.iter().map(|(_, amount)| amount.cents()).sum();
+
+        assert_eq!(total, 1000);
+    }
+
+    #[test]
+    fn test_exact_money_split_accepts_correct_total() {
+        let split = Split::new_exact(vec![(1, 10.25), (2, 20.50), (3, 19.25)]).unwrap();
+
+        let shares = split.compute_money_shares(Money::from_cents(5000)).unwrap();
+
+        assert_eq!(
+            shares,
+            vec![
+                (1, Money::from_cents(1025)),
+                (2, Money::from_cents(2050)),
+                (3, Money::from_cents(1925)),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_exact_money_split_rejects_wrong_total() {
+        let split = Split::new_exact(vec![(1, 10.00), (2, 15.00)]).unwrap();
+
+        let result = split.compute_money_shares(Money::from_cents(3000));
+
+        assert_eq!(
+            result.unwrap_err(),
+            "Exact shares must add up to the total amount"
+        );
+    }
+
+    #[test]
+    fn test_exact_money_split_rejects_non_finite_amount() {
+        let split = Split::Exact(vec![(1, f64::NAN)]);
+
+        let result = split.compute_money_shares(Money::from_cents(1000));
+
+        assert_eq!(result.unwrap_err(), "Share amount must be a finite number");
     }
 }
