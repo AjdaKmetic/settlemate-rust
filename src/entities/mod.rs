@@ -7,4 +7,5 @@ pub mod expenses;
 pub mod group_members;
 pub mod groups;
 pub mod payments;
+pub mod sessions;
 pub mod users;
