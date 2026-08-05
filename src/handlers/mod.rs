@@ -1,5 +1,6 @@
 pub mod account;
 pub mod activity;
+pub mod auth;
 pub mod dashboard;
 pub mod expenses;
 pub mod friends;

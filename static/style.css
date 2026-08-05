@@ -630,3 +630,71 @@ body {
     border-color: var(--color-primary);
 }
 
+.auth-page {
+    width: 100%;
+    max-width: 440px;
+    margin: auto;
+    padding: 40px 20px;
+}
+
+.auth-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 28px;
+}
+
+.auth-card h1 {
+    margin-bottom: 8px;
+}
+
+.auth-subtitle,
+.auth-footer {
+    color: var(--color-muted);
+    margin-bottom: 20px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auth-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.auth-form input {
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font: inherit;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.auth-error,
+.auth-success {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+}
+
+.auth-error {
+    color: var(--balance-negative-amount);
+    background: var(--balance-negative-bg);
+    border: 1px solid var(--balance-negative-border);
+}
+
+.auth-success {
+    color: var(--balance-positive-amount);
+    background: var(--balance-positive-bg);
+    border: 1px solid var(--balance-positive-border);
+}
