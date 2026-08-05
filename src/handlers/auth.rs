@@ -107,3 +107,30 @@ pub async fn register_user(
             .into_response(),
     }
 }
+
+#[derive(Template)]
+#[template(path = "login.html")]
+struct LoginTemplate {
+    has_error: bool,
+    error_message: String,
+}
+
+fn render_login(has_error: bool, error_message: &str) -> Response {
+    match (LoginTemplate {
+        has_error,
+        error_message: error_message.to_string(),
+    })
+    .render()
+    {
+        Ok(html) => Html(html).into_response(),
+        Err(error) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Template error: {error}"),
+        )
+            .into_response(),
+    }
+}
+
+pub async fn login_form() -> Response {
+    render_login(false, "")
+}
