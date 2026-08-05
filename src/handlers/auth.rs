@@ -3,13 +3,15 @@ use axum::{
     Form,
     extract::State,
     http::StatusCode,
-    response::{Html, IntoResponse, Response},
+    response::{Html, IntoResponse, Redirect, Response},
 };
+use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
 use serde::Deserialize;
 
 use crate::{
     app::state::AppState,
-    services::db::user_service::{create_user, find_user_by_email},
+    services::db::session_service::create_session,
+    services::db::user_service::{create_user, find_user_by_email, login_user},
 };
 
 #[derive(Template)]
@@ -133,4 +135,50 @@ fn render_login(has_error: bool, error_message: &str) -> Response {
 
 pub async fn login_form() -> Response {
     render_login(false, "")
+}
+
+#[derive(Deserialize)]
+pub struct LoginForm {
+    email: String,
+    password: String,
+}
+
+pub async fn login(
+    State(state): State<AppState>,
+    jar: CookieJar,
+    Form(form): Form<LoginForm>,
+) -> Response {
+    let user = match login_user(&state.db, &form.email, &form.password).await {
+        Ok(Some(user)) => user,
+        Ok(None) => {
+            return render_login(true, "Neveljavno uporabniško ime ali geslo.");
+        }
+        Err(error) => {
+            eprintln!("Napaka pri prijavi uporabnika: {error}");
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Prišlo je do napake pri prijavi. Poskusite znova pozneje.",
+            )
+                .into_response();
+        }
+    };
+
+    let token = match create_session(&state.db, user.id).await {
+        Ok(token) => token,
+        Err(error) => {
+            eprintln!("Napaka pri ustvarjanju seje: {error}");
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Prišlo je do napake pri prijavi. Poskusite znova pozneje.",
+            )
+                .into_response();
+        }
+    };
+
+    let cookie = Cookie::build(("settlemate_session", token))
+        .path("/")
+        .http_only(true)
+        .same_site(SameSite::Lax);
+
+    (jar.add(cookie), Redirect::to("/")).into_response()
 }

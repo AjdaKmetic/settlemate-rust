@@ -7,7 +7,7 @@ use settlemate_rust::database::connect;
 use settlemate_rust::handlers::{
     account::account,
     activity::activity,
-    auth::{login_form, register_form, register_user},
+    auth::{login, login_form, register_form, register_user},
     expenses::{add_expense, new_expense},
     friends::{add_friend, friend_form, list_friends},
     groups::{add_group, group_detail, group_form, list_groups},
@@ -38,7 +38,7 @@ async fn main() {
         .route("/expenses/new", get(new_expense))
         .route("/expenses", post(add_expense))
         .route("/register", get(register_form).post(register_user))
-        .route("/login", get(login_form))
+        .route("/login", get(login_form).post(login))
         .nest_service("/static", ServeDir::new("static"))
         .with_state(state);
 

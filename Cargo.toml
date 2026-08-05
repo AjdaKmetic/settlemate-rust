@@ -15,3 +15,4 @@ tower-http = { version = "0.6", features = ["fs"] }
 migration = { path = "migration" }
 chrono = "0.4.45"
 uuid = { version = "1", features = ["v4"] }
+axum-extra = { version = "0.12", features = ["cookie"] }
