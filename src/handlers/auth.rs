@@ -15,7 +15,7 @@ use crate::{
 };
 
 #[derive(Template)]
-#[template(path = "Register.html")]
+#[template(path = "register.html")]
 struct RegisterTemplate {
     has_error: bool,
     error_message: String,
