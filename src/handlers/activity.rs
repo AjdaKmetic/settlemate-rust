@@ -1,3 +1,4 @@
+use crate::handlers::current_user::CurrentUser;
 use askama::Template;
 use axum::response::{Html, IntoResponse};
 
@@ -5,6 +6,6 @@ use axum::response::{Html, IntoResponse};
 #[template(path = "activity.html")]
 pub struct ActivityTemplate;
 
-pub async fn activity() -> impl IntoResponse {
+pub async fn activity(_current_user: CurrentUser) -> impl IntoResponse {
     Html(ActivityTemplate.render().unwrap())
 }

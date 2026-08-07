@@ -5,7 +5,6 @@ use migration::{Migrator, MigratorTrait};
 use settlemate_rust::app::state::AppState;
 use settlemate_rust::database::connect;
 use settlemate_rust::handlers::{
-    account::account,
     activity::activity,
     auth::{login, login_form, logout, register_form, register_user},
     expenses::{add_expense, new_expense},
@@ -33,7 +32,6 @@ async fn main() {
         .route("/tabs/friends", get(tabs_friends))
         .route("/tabs/groups", get(tabs_groups))
         .route("/tabs/activity", get(tabs_activity))
-        .route("/account", get(account))
         .route("/activity", get(activity))
         .route("/expenses/new", get(new_expense))
         .route("/expenses", post(add_expense))

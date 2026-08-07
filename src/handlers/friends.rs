@@ -8,6 +8,7 @@ use serde::Deserialize;
 
 use crate::app::state::AppState;
 use crate::entities::users;
+use crate::handlers::current_user::CurrentUser;
 use crate::services::db::user_service::{create_user, get_all_users};
 
 pub struct FriendView {
@@ -69,7 +70,10 @@ pub struct NewFriendForm {
     email: String,
 }
 
-pub async fn list_friends(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn list_friends(
+    _current_user: CurrentUser,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
     // TODO: izriši lepšo HTML napako (npr. ločen `error.html` template).
     match get_all_users(&state.db).await {
         Ok(users) => match render_friends_panel(users) {
@@ -80,7 +84,10 @@ pub async fn list_friends(State(state): State<AppState>) -> impl IntoResponse {
     }
 }
 
-pub async fn friend_form() -> impl IntoResponse {
+pub async fn friend_form(
+    _current_user: CurrentUser,
+    State(_state): State<AppState>,
+) -> impl IntoResponse {
     match FriendFormTemplate.render() {
         Ok(html) => Html(html).into_response(),
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {e}")).into_response(),
@@ -88,6 +95,7 @@ pub async fn friend_form() -> impl IntoResponse {
 }
 
 pub async fn add_friend(
+    _current_user: CurrentUser,
     State(state): State<AppState>,
     Form(form): Form<NewFriendForm>,
 ) -> impl IntoResponse {

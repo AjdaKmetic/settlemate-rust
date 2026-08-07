@@ -8,6 +8,7 @@ use axum::{
 use crate::{
     app::state::AppState,
     entities::groups,
+    handlers::current_user::CurrentUser,
     handlers::friends::{FriendView, users_to_friend_views},
     services::db::expense_service::get_balance,
     services::db::group_service::get_all_groups,
@@ -80,30 +81,30 @@ impl IndexTemplate {
     }
 }
 
-async fn current_user_balance(state: &AppState) -> (String, i64) {
-    let users = get_all_users(&state.db).await.unwrap_or_default();
-    println!("Users in DB: {:?}", users);
-    match users.iter().find(|u| u.name == "Ajda") {
-        Some(user) => {
-            let balance = get_balance(&state.db, user.id).await.unwrap_or(0);
-            println!("Balance for user {}: {}", user.name, balance);
-            (user.name.clone(), balance)
+pub async fn index(current_user: CurrentUser, State(state): State<AppState>) -> impl IntoResponse {
+    let balance = match get_balance(&state.db, current_user.id).await {
+        Ok(balance) => balance,
+        Err(error) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Error while loading balance: {error}"),
+            )
+                .into_response();
         }
-        None => {
-            println!("User 'Ajda' not found in the database.");
-            ("Guest".to_string(), 0)
-        }
-    }
-}
+    };
 
-pub async fn index(State(state): State<AppState>) -> impl IntoResponse {
-    let (username, balance) = current_user_balance(&state).await;
     match get_all_groups(&state.db).await {
         Ok(groups) => {
-            let template = IndexTemplate::new(username, balance, groups);
+            let template = IndexTemplate::new(current_user.name, balance, groups);
+
             Html(template.render().unwrap()).into_response()
         }
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {e}")).into_response(),
+
+        Err(error) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Error while loading groups: {error}"),
+        )
+            .into_response(),
     }
 }
 
@@ -121,7 +122,10 @@ fn render_tab(
     Html(template.render().unwrap())
 }
 
-pub async fn tabs_friends(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn tabs_friends(
+    _current_user: CurrentUser,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
     match get_all_users(&state.db).await {
         Ok(users) => {
             render_tab("friends", users_to_friend_views(users), Vec::new()).into_response()
@@ -130,13 +134,19 @@ pub async fn tabs_friends(State(state): State<AppState>) -> impl IntoResponse {
     }
 }
 
-pub async fn tabs_groups(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn tabs_groups(
+    _current_user: CurrentUser,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
     match get_all_groups(&state.db).await {
         Ok(groups) => render_tab("groups", Vec::new(), groups).into_response(),
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {e}")).into_response(),
     }
 }
 
-pub async fn tabs_activity(State(_state): State<AppState>) -> impl IntoResponse {
+pub async fn tabs_activity(
+    _current_user: CurrentUser,
+    State(_state): State<AppState>,
+) -> impl IntoResponse {
     render_tab("activity", Vec::new(), Vec::new())
 }

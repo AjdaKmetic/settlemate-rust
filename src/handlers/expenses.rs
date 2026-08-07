@@ -9,6 +9,7 @@ use serde::Deserialize;
 
 use crate::app::state::AppState;
 use crate::entities::users;
+use crate::handlers::current_user::CurrentUser;
 use crate::services::db::expense_service::{NewSplit, create_expense};
 use crate::services::db::user_service::get_all_users;
 
@@ -27,33 +28,25 @@ pub struct NewExpenseForm {
     split_with: i32,
 }
 
-pub async fn new_expense(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn new_expense(
+    current_user: CurrentUser,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
     let users = get_all_users(&state.db).await.unwrap_or_default();
-    let current_user_id = users
-        .iter()
-        .find(|u| u.name == "Ajda")
-        .map(|u| u.id)
-        .unwrap_or(1);
 
     let template = NewExpenseTemplate {
         friends: users,
-        current_user_id,
+        current_user_id: current_user.id,
     };
 
     Html(template.render().unwrap())
 }
 
 pub async fn add_expense(
+    current_user: CurrentUser,
     State(state): State<AppState>,
     Form(form): Form<NewExpenseForm>,
 ) -> impl IntoResponse {
-    let users = get_all_users(&state.db).await.unwrap_or_default();
-    let current_user_id = users
-        .iter()
-        .find(|u| u.name == "Ajda")
-        .map(|u| u.id)
-        .unwrap_or(1);
-
     if form.amount <= 0.0 {
         return (StatusCode::BAD_REQUEST, "Amount must be a positive number").into_response();
     }
@@ -65,7 +58,7 @@ pub async fn add_expense(
 
     let splits = vec![
         NewSplit {
-            user_id: current_user_id,
+            user_id: current_user.id,
             amount_cents: current_user_share,
         },
         NewSplit {
@@ -84,9 +77,10 @@ pub async fn add_expense(
     .await
     {
         Ok(_) => (StatusCode::OK, "Expense added successfully").into_response(),
-        Err(e) => (
+
+        Err(error) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Error adding expense: {e}"),
+            format!("Error adding expense: {error}"),
         )
             .into_response(),
     }

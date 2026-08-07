@@ -8,6 +8,7 @@ use serde::Deserialize;
 
 use crate::app::state::AppState;
 use crate::entities::{groups, users};
+use crate::handlers::current_user::CurrentUser;
 use crate::services::db::group_service::{
     add_member_to_group, create_group, find_group_by_id, get_all_groups,
 };
@@ -45,7 +46,10 @@ pub struct NewGroupForm {
     friend_ids: Vec<i32>,
 }
 
-pub async fn list_groups(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn list_groups(
+    _current_user: CurrentUser,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
     match get_all_groups(&state.db).await {
         Ok(groups) => match (GroupsTemplate { groups }).render() {
             Ok(html) => Html(html).into_response(),
@@ -56,7 +60,10 @@ pub async fn list_groups(State(state): State<AppState>) -> impl IntoResponse {
 }
 
 // funkcija, ki vrne obrazec za ustvarjanje nove skupine
-pub async fn group_form(State(state): State<AppState>) -> impl IntoResponse {
+pub async fn group_form(
+    _current_user: CurrentUser,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
     match get_all_users(&state.db).await {
         Ok(friends) => {
             let template = GroupFormTemplate { friends };
@@ -78,6 +85,7 @@ pub async fn group_form(State(state): State<AppState>) -> impl IntoResponse {
 }
 
 pub async fn add_group(
+    _current_user: CurrentUser,
     State(state): State<AppState>,
     Form(form): Form<NewGroupForm>,
 ) -> impl IntoResponse {
@@ -108,7 +116,11 @@ pub async fn add_group(
     }
 }
 
-pub async fn group_detail(State(state): State<AppState>, Path(id): Path<i32>) -> impl IntoResponse {
+pub async fn group_detail(
+    _current_user: CurrentUser,
+    State(state): State<AppState>,
+    Path(id): Path<i32>,
+) -> impl IntoResponse {
     match find_group_by_id(&state.db, id).await {
         Ok(Some(group)) => match (GroupDetailTemplate { group }).render() {
             Ok(html) => Html(html).into_response(),
