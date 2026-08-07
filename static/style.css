@@ -698,3 +698,23 @@ body {
     background: var(--balance-positive-bg);
     border: 1px solid var(--balance-positive-border);
 }
+
+.nav-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logout-form {
+    margin: 0;
+}
+
+.logout-button {
+    position: static;
+    padding: 4px 8px;
+    border: 0;
+    background: transparent;
+    color: var(--color-primary);
+    font: inherit;
+    cursor: pointer;
+}

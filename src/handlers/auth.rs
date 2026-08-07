@@ -10,7 +10,7 @@ use serde::Deserialize;
 
 use crate::{
     app::state::AppState,
-    services::db::session_service::create_session,
+    services::db::session_service::{create_session, delete_session},
     services::db::user_service::{create_user, find_user_by_email, login_user},
 };
 
@@ -181,4 +181,26 @@ pub async fn login(
         .same_site(SameSite::Lax);
 
     (jar.add(cookie), Redirect::to("/")).into_response()
+}
+
+pub async fn logout(State(state): State<AppState>, jar: CookieJar) -> Response {
+    let token = jar
+        .get("settlemate_session")
+        .map(|cookie| cookie.value().to_string());
+
+    if let Some(token) = token {
+        if let Err(error) = delete_session(&state.db, &token).await {
+            eprintln!("Napaka pri brisanju seje: {error}");
+
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Odjava trenutno ni mogoča.",
+            )
+                .into_response();
+        }
+    }
+
+    let cookie = Cookie::build("settlemate_session").path("/");
+
+    (jar.remove(cookie), Redirect::to("/login")).into_response()
 }
