@@ -11,8 +11,8 @@ use crate::{
     handlers::current_user::CurrentUser,
     handlers::friends::{FriendView, users_to_friend_views},
     services::db::expense_service::get_balance,
+    services::db::friendship_service::get_friends,
     services::db::group_service::get_all_groups,
-    services::db::user_service::get_all_users,
 };
 
 #[derive(Template)]
@@ -123,14 +123,17 @@ fn render_tab(
 }
 
 pub async fn tabs_friends(
-    _current_user: CurrentUser,
+    current_user: CurrentUser,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
-    match get_all_users(&state.db).await {
+    match get_friends(&state.db, current_user.id).await {
         Ok(users) => {
             render_tab("friends", users_to_friend_views(users), Vec::new()).into_response()
         }
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {e}")).into_response(),
+
+        Err(error) => {
+            (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {error}")).into_response()
+        }
     }
 }
 

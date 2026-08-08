@@ -1,0 +1,6 @@
+<label for="paid-by">Paid by</label>
+
+<select id="paid-by" name="paid_by" required>
+    <option value="{{ current_user_id }}">You</option>
+    <option value="{{ friend.id }}">{{ friend.name }}</option>
+</select>

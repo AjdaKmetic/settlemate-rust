@@ -7,7 +7,7 @@ use settlemate_rust::database::connect;
 use settlemate_rust::handlers::{
     activity::activity,
     auth::{login, login_form, logout, register_form, register_user},
-    expenses::{add_expense, new_expense},
+    expenses::{add_expense, close_expense_modal, new_expense},
     friends::{add_friend, friend_form, list_friends},
     groups::{add_group, group_detail, group_form, list_groups},
     index::{index, tabs_activity, tabs_friends, tabs_groups},
@@ -38,6 +38,15 @@ async fn main() {
         .route("/register", get(register_form).post(register_user))
         .route("/login", get(login_form).post(login))
         .route("/logout", post(logout))
+        .route(
+            "/friends/{id}/delete",
+            post(settlemate_rust::handlers::friends::remove_friend),
+        )
+        .route(
+            "/expenses/payer-options",
+            get(settlemate_rust::handlers::expenses::payer_options),
+        )
+        .route("/expenses/close", get(close_expense_modal))
         .nest_service("/static", ServeDir::new("static"))
         .with_state(state);
 

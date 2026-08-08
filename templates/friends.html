@@ -20,6 +20,12 @@
             <p class="row-title">{{ friend.name }}</p>
             <p class="row-meta">{{ friend.email }}</p>
         </div>
+        <form hx-post="/friends/{{ friend.id }}/delete"
+              hx-target="#friends-panel"
+              hx-swap="outerHTML"
+              class="inline-form">
+            <button class="btn-delete" type="submit">Remove</button>
+        </form>
     </div>
     {% endfor %}
 

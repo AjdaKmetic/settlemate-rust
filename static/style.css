@@ -718,3 +718,9 @@ body {
     font: inherit;
     cursor: pointer;
 }
+
+.form-error {
+    color: var(--balance-negative-amount);
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}

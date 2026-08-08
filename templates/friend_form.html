@@ -1,14 +1,32 @@
-<form hx-post="/friends"
-      hx-target="#friends-panel"
-      hx-swap="outerHTML"
-      class="inline-form">
-    <input type="text" name="name" placeholder="Friend's name" required>
-    <input type="email" name="email" placeholder="Email" required>
-    <button class="btn-create" type="submit">Add</button>
-    <button class="btn-cancel" type="button"
-            hx-get="/tabs/friends"
-            hx-target="#tab-shell"
-            hx-swap="outerHTML">
+{% if has_error %}
+<p class="form-error">{{ error_message }}</p>
+{% endif %}
+
+<form
+    hx-post="/friends"
+    hx-target="#friends-panel"
+    hx-swap="outerHTML"
+    class="inline-form"
+>
+    <input
+        type="text"
+        name="email"
+        placeholder="Friend's email"
+        autocomplete="email"
+        required
+    >
+
+    <button class="btn-create" type="submit">
+        Add
+    </button>
+
+    <button
+        class="btn-cancel"
+        type="button"
+        hx-get="/tabs/friends"
+        hx-target="#tab-shell"
+        hx-swap="outerHTML"
+    >
         Cancel
     </button>
 </form>

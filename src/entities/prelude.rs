@@ -2,6 +2,7 @@
 
 pub use super::expense_splits::Entity as ExpenseSplits;
 pub use super::expenses::Entity as Expenses;
+pub use super::friendships::Entity as Friendships;
 pub use super::group_members::Entity as GroupMembers;
 pub use super::groups::Entity as Groups;
 pub use super::payments::Entity as Payments;
