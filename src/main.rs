@@ -42,10 +42,6 @@ async fn main() {
             "/friends/{id}/delete",
             post(settlemate_rust::handlers::friends::remove_friend),
         )
-        .route(
-            "/expenses/payer-options",
-            get(settlemate_rust::handlers::expenses::payer_options),
-        )
         .route("/expenses/close", get(close_expense_modal))
         .nest_service("/static", ServeDir::new("static"))
         .with_state(state);

@@ -1,10 +1,10 @@
 use askama::Template;
 use axum::{
-    Form,
-    extract::{Query, State},
+    extract::State,
     http::StatusCode,
     response::{Html, IntoResponse},
 };
+use axum_extra::extract::Form;
 use serde::Deserialize;
 
 use crate::app::state::AppState;
@@ -17,15 +17,14 @@ use crate::services::db::friendship_service::get_friends;
 #[template(path = "new_expense.html")]
 struct NewExpenseTemplate {
     friends: Vec<users::Model>,
-    current_user_id: i32,
 }
 
 #[derive(Deserialize)]
 pub struct NewExpenseForm {
     description: String,
     amount: f64,
-    paid_by: i32,
-    split_with: i32,
+    #[serde(default)]
+    friend_ids: Vec<i32>,
 }
 
 pub async fn new_expense(
@@ -36,10 +35,7 @@ pub async fn new_expense(
         .await
         .unwrap_or_default();
 
-    let template = NewExpenseTemplate {
-        friends: users,
-        current_user_id: current_user.id,
-    };
+    let template = NewExpenseTemplate { friends: users };
 
     Html(template.render().unwrap())
 }
@@ -60,45 +56,52 @@ pub async fn add_expense(
         }
     };
 
-    let split_user_is_friend = friends.iter().any(|friend| friend.id == form.split_with);
+    if form.friend_ids.is_empty() {
+    return (
+        StatusCode::BAD_REQUEST,
+        "Select at least one friend",
+    )
+        .into_response();
+}
 
-    if !split_user_is_friend {
+    let all_are_friends = form
+        .friend_ids
+        .iter()
+        .all(|id| friends.iter().any(|friend| friend.id == *id));
+
+    if !all_are_friends {
         return (
             StatusCode::BAD_REQUEST,
-            "The user you are trying to split with is not your friend",
-        )
-            .into_response();
-    }
-
-    if form.paid_by != current_user.id && form.paid_by != form.split_with {
-        return (
-            StatusCode::BAD_REQUEST,
-            "The payer must be you or the selected friend.",
+            "One or more selected friends are not in your friend list",
         )
             .into_response();
     }
 
     let amount_cents = (form.amount * 100.0).round() as i64;
 
-    let current_user_share = amount_cents / 2;
-    let friend_share = amount_cents - current_user_share;
+    let participant_counts = form.friend_ids.len() + 1;
+    let friends_share = amount_cents / participant_counts as i64;
 
-    let splits = vec![
-        NewSplit {
-            user_id: current_user.id,
-            amount_cents: current_user_share,
-        },
-        NewSplit {
-            user_id: form.split_with,
-            amount_cents: friend_share,
-        },
-    ];
+    let current_user_share = amount_cents - (friends_share * form.friend_ids.len() as i64);
+
+    let mut splits = Vec::new();
+    splits.push(NewSplit {
+        user_id: current_user.id,
+        amount_cents: current_user_share,
+    });
+
+    for friends_id in &form.friend_ids {
+        splits.push(NewSplit {
+            user_id: *friends_id,
+            amount_cents: friends_share,
+        });
+    }
 
     match create_expense(
         &state.db,
         form.description,
         amount_cents,
-        form.paid_by,
+        current_user.id,
         splits,
     )
     .await
@@ -110,57 +113,6 @@ pub async fn add_expense(
             format!("Error adding expense: {error}"),
         )
             .into_response(),
-    }
-}
-
-#[derive(Template)]
-#[template(path = "payer_select.html")]
-struct PayerSelectTemplate {
-    current_user_id: i32,
-    friend: users::Model,
-}
-
-#[derive(Deserialize)]
-pub struct PayerOptionsQuery {
-    split_with: i32,
-}
-
-pub async fn payer_options(
-    State(state): State<AppState>,
-    current_user: CurrentUser,
-    Query(query): Query<PayerOptionsQuery>,
-) -> impl IntoResponse {
-    let friends = match get_friends(&state.db, current_user.id).await {
-        Ok(friends) => friends,
-        Err(error) => {
-            return (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Error loading friends: {error}"),
-            )
-                .into_response();
-        }
-    };
-
-    let friend = match friends
-        .into_iter()
-        .find(|friend| friend.id == query.split_with)
-    {
-        Some(friend) => friend,
-        None => {
-            return (StatusCode::BAD_REQUEST, "Selected user is not your friend.").into_response();
-        }
-    };
-
-    let template = PayerSelectTemplate {
-        current_user_id: current_user.id,
-        friend,
-    };
-
-    match template.render() {
-        Ok(html) => Html(html).into_response(),
-        Err(error) => {
-            (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {error}")).into_response()
-        }
     }
 }
 

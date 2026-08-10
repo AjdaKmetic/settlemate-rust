@@ -3,47 +3,65 @@
         <div class="section-header">
             <h2>Add expense</h2>
         </div>
-        <form hx-post="/expenses" hx-target="#modal-slot" hx-swap="innerHTML">
+
+        <form
+            hx-post="/expenses"
+            hx-target="#modal-slot"
+            hx-swap="innerHTML"
+        >
+            <label>
+                Description
+                <input
+                    type="text"
+                    name="description"
+                    required
+                >
+            </label>
+
             <div class="group-fields">
                 <label>
-                    Description
-                    <input type="text" name="description" required>
-                </label>
-                <label for="split-with">Split with</label>
-
-                <select id="split-with"
-                    name="split_with"
-                    required
-                    hx-get="/expenses/payer-options"
-                    hx-trigger="change"
-                    hx-include="this"
-                    hx-target="#payer-select-slot"
-                    hx-swap="innerHTML">
-                <option value="" selected disabled>Select a friend</option>
-                {% for friend in friends %}
-                    <option value="{{ friend.id }}">{{ friend.name }}</option>
-                {% endfor %}
-                </select>
-                <div id="payer-select-slot">
-                    <label for="paid-by">Paid by</label>
-
-                    <select id="paid-by" name="paid_by" required>
-                        <option value="{{ current_user_id }}">You</option>
+                    Split with
+                    <select
+                        name="friend_ids"
+                        multiple
+                        size="1"
+                        required
+                    >
+                        {% for friend in friends %}
+                        <option
+                            value="{{ friend.id }}"
+                            {% if loop.first %}selected{% endif %}
+                        >
+                            {{ friend.name }}
+                        </option>
+                        {% endfor %}
                     </select>
-                </div>
+                </label>
+
                 <label>
                     Amount
-                    <input type="number" name="amount" step="0.01" required>
+                    <input
+                        type="number"
+                        name="amount"
+                        min="0.01"
+                        step="0.01"
+                        required
+                    >
                     <span>€</span>
                 </label>
             </div>
+
             <div class="form-actions">
-                <button type="button" class="btn-cancel"
+                <button
+                    type="button"
+                    class="btn-cancel"
                     hx-get="/expenses/close"
                     hx-target="#modal-slot"
-                    hx-swap="innerHTML">
+                    hx-swap="innerHTML"
+                >
                     Cancel
                 </button>
+
                 <button type="submit" class="btn-create">
                     Add Expense
                 </button>
