@@ -10,7 +10,6 @@ pub struct Model {
     pub id: i32,
     pub expense_id: i32,
     pub user_id: i32,
-    #[sea_orm(column_type = "Double")]
     pub amount_cents: i64,
 }
 

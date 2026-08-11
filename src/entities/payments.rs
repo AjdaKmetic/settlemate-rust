@@ -10,9 +10,8 @@ pub struct Model {
     pub id: i32,
     pub from_id: i32,
     pub to_id: i32,
-    #[sea_orm(column_type = "Double")]
-    pub amount: f64,
-    pub group_id: i32,
+    pub amount_cents: i64,
+    pub group_id: Option<i32>,
     pub created_at: DateTimeUtc,
 }
 

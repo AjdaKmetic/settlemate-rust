@@ -6,3 +6,4 @@ pub mod expenses;
 pub mod friends;
 pub mod groups;
 pub mod index;
+pub mod settlements;

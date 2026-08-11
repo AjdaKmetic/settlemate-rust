@@ -725,3 +725,43 @@ body {
     margin-bottom: 8px;
 }
 
+.friend-row {
+    cursor: default;
+}
+
+.friend-remove-form {
+    margin-top: 3px;
+}
+
+.btn-delete {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-muted);
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.btn-delete:hover {
+    color: var(--balance-negative-amount);
+    text-decoration: underline;
+}
+
+.settle-form {
+    margin-top: 4px;
+}
+
+.btn-settle {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-primary);
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.btn-settle:hover {
+    text-decoration: underline;
+}

@@ -37,7 +37,7 @@ pub struct TabShellTemplate {
 }
 
 impl IndexTemplate {
-    fn new(username: String, balance_cents: i64, groups: Vec<groups::Model>) -> Self {
+    fn new(username: String, balance_cents: i64, friends: Vec<FriendView>) -> Self {
         let is_positive = balance_cents > 0;
         let is_negative = balance_cents < 0;
 
@@ -74,9 +74,9 @@ impl IndexTemplate {
             balance_label,
             balance_secondary,
             formatted_balance,
-            active_tab: "groups".to_string(),
-            friends: Vec::new(),
-            groups,
+            active_tab: "friends".to_string(),
+            friends,
+            groups: Vec::new(),
         }
     }
 }
@@ -84,6 +84,7 @@ impl IndexTemplate {
 pub async fn index(current_user: CurrentUser, State(state): State<AppState>) -> impl IntoResponse {
     let balance = match get_balance(&state.db, current_user.id).await {
         Ok(balance) => balance,
+
         Err(error) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
@@ -93,19 +94,33 @@ pub async fn index(current_user: CurrentUser, State(state): State<AppState>) -> 
         }
     };
 
-    match get_all_groups(&state.db).await {
-        Ok(groups) => {
-            let template = IndexTemplate::new(current_user.name, balance, groups);
+    let users = match get_friends(&state.db, current_user.id).await {
+        Ok(users) => users,
 
-            Html(template.render().unwrap()).into_response()
+        Err(error) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Error loading friends: {error}"),
+            )
+                .into_response();
         }
+    };
 
-        Err(error) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Error while loading groups: {error}"),
-        )
-            .into_response(),
-    }
+    let friends = match users_to_friend_views(&state.db, current_user.id, users).await {
+        Ok(friends) => friends,
+
+        Err(error) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Error loading balances: {error}"),
+            )
+                .into_response();
+        }
+    };
+
+    let template = IndexTemplate::new(current_user.name, balance, friends);
+
+    Html(template.render().unwrap()).into_response()
 }
 
 fn render_tab(
@@ -127,9 +142,14 @@ pub async fn tabs_friends(
     State(state): State<AppState>,
 ) -> impl IntoResponse {
     match get_friends(&state.db, current_user.id).await {
-        Ok(users) => {
-            render_tab("friends", users_to_friend_views(users), Vec::new()).into_response()
-        }
+        Ok(users) => match users_to_friend_views(&state.db, current_user.id, users).await {
+            Ok(friends) => render_tab("friends", friends, Vec::new()).into_response(),
+            Err(error) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Error loading balances: {error}"),
+            )
+                .into_response(),
+        },
 
         Err(error) => {
             (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {error}")).into_response()

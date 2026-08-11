@@ -6,9 +6,12 @@ use axum::{
 };
 use serde::Deserialize;
 
+use sea_orm::DatabaseConnection;
+
 use crate::app::state::AppState;
 use crate::entities::users;
 use crate::handlers::current_user::CurrentUser;
+use crate::services::db::expense_service::get_balance_with_friend;
 use crate::services::db::friendship_service::{add_friendship, delete_friendship, get_friends};
 use crate::services::db::user_service::find_user_by_email;
 
@@ -17,6 +20,10 @@ pub struct FriendView {
     pub initials: String,
     pub name: String,
     pub email: String,
+    pub balance_state_class: &'static str,
+    pub formatted_balance: String,
+    pub balance_note: &'static str,
+    pub has_balance: bool,
 }
 
 #[derive(Template)]
@@ -50,26 +57,62 @@ fn get_initials(name: &str) -> String {
     initials.to_uppercase()
 }
 
-pub fn user_to_friend_view(user: users::Model) -> FriendView {
+fn user_to_friend_view(user: users::Model, balance_cents: i64) -> FriendView {
+    let absolute = balance_cents.unsigned_abs();
+    let euros = absolute / 100;
+    let cents = absolute % 100;
+
+    let formatted_balance = format!("€{euros}.{cents:02}");
+
+    let (balance_state_class, balance_note) = if balance_cents > 0 {
+        ("is-positive", "owes you")
+    } else if balance_cents < 0 {
+        ("is-negative", "you owe")
+    } else {
+        ("is-neutral", "settled up")
+    };
+
     FriendView {
         id: user.id,
         initials: get_initials(&user.name),
         name: user.name,
         email: user.email,
+        balance_state_class,
+        formatted_balance,
+        balance_note,
+        has_balance: balance_cents != 0,
     }
 }
 
-pub fn users_to_friend_views(users: Vec<users::Model>) -> Vec<FriendView> {
-    users.into_iter().map(user_to_friend_view).collect()
-}
+pub async fn users_to_friend_views(
+    db: &DatabaseConnection,
+    current_user_id: i32,
+    users: Vec<users::Model>,
+) -> Result<Vec<FriendView>, sea_orm::DbErr> {
+    let mut friends = Vec::with_capacity(users.len());
 
-fn render_friends_panel(users: Vec<users::Model>) -> Result<String, askama::Error> {
-    FriendsTemplate {
-        friends: users_to_friend_views(users),
+    for user in users {
+        let balance_cents = get_balance_with_friend(db, current_user_id, user.id).await?;
+
+        friends.push(user_to_friend_view(user, balance_cents));
     }
-    .render()
+
+    Ok(friends)
 }
 
+async fn render_friends_panel(
+    db: &DatabaseConnection,
+    current_user_id: i32,
+    users: Vec<users::Model>,
+) -> Result<String, String> {
+    let friends = users_to_friend_views(db, current_user_id, users)
+        .await
+        .map_err(|error| error.to_string())?;
+
+    FriendsTemplate { friends }
+        .render()
+        .map_err(|error| error.to_string())
+}
 fn render_friend_form(has_error: bool, error_message: &str) -> Response {
     match (FriendFormTemplate {
         has_error,
@@ -108,12 +151,12 @@ pub struct NewFriendForm {
 }
 
 pub async fn list_friends(
-    _current_user: CurrentUser,
+    current_user: CurrentUser,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
     // TODO: izriši lepšo HTML napako (npr. ločen `error.html` template).
-    match get_friends(&state.db, _current_user.id).await {
-        Ok(users) => match render_friends_panel(users) {
+    match get_friends(&state.db, current_user.id).await {
+        Ok(users) => match render_friends_panel(&state.db, current_user.id, users).await {
             Ok(html) => Html(html).into_response(),
             Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {e}")).into_response(),
         },
@@ -152,7 +195,7 @@ pub async fn add_friend(
 
     match add_friendship(&state.db, current_user.id, friend.id).await {
         Ok(true) => match get_friends(&state.db, current_user.id).await {
-            Ok(users) => match render_friends_panel(users) {
+            Ok(users) => match render_friends_panel(&state.db, current_user.id, users).await {
                 Ok(html) => Html(html).into_response(),
 
                 Err(error) => {
@@ -184,7 +227,7 @@ pub async fn remove_friend(
 ) -> impl IntoResponse {
     match delete_friendship(&state.db, current_user.id, friend_id).await {
         Ok(_) => match get_friends(&state.db, current_user.id).await {
-            Ok(friends) => match render_friends_panel(friends) {
+            Ok(friends) => match render_friends_panel(&state.db, current_user.id, friends).await {
                 Ok(html) => Html(html).into_response(),
                 Err(error) => {
                     (StatusCode::INTERNAL_SERVER_ERROR, format!("Error: {error}")).into_response()

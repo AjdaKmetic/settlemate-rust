@@ -11,6 +11,7 @@ use settlemate_rust::handlers::{
     friends::{add_friend, friend_form, list_friends},
     groups::{add_group, group_detail, group_form, list_groups},
     index::{index, tabs_activity, tabs_friends, tabs_groups},
+    settlements::settle_up,
 };
 
 #[tokio::main]
@@ -43,6 +44,7 @@ async fn main() {
             post(settlemate_rust::handlers::friends::remove_friend),
         )
         .route("/expenses/close", get(close_expense_modal))
+        .route("/friends/{id}/settle", post(settle_up))
         .nest_service("/static", ServeDir::new("static"))
         .with_state(state);
 

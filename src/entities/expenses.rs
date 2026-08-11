@@ -9,7 +9,6 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub description: String,
-    #[sea_orm(column_type = "Double")]
     pub amount_cents: i64,
     pub paid_by: i32,
     pub group_id: Option<i32>,

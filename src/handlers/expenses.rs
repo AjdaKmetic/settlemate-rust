@@ -57,12 +57,8 @@ pub async fn add_expense(
     };
 
     if form.friend_ids.is_empty() {
-    return (
-        StatusCode::BAD_REQUEST,
-        "Select at least one friend",
-    )
-        .into_response();
-}
+        return (StatusCode::BAD_REQUEST, "Select at least one friend").into_response();
+    }
 
     let all_are_friends = form
         .friend_ids
