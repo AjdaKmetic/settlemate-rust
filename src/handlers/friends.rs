@@ -225,6 +225,25 @@ pub async fn remove_friend(
     current_user: CurrentUser,
     Path(friend_id): Path<i32>,
 ) -> impl IntoResponse {
+    let balance = match get_balance_with_friend(&state.db, current_user.id, friend_id).await {
+        Ok(balance) => balance,
+
+        Err(error) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Error loading balance: {error}"),
+            )
+                .into_response();
+        }
+    };
+
+    if balance != 0 {
+        return (
+            StatusCode::CONFLICT,
+            "Settle up before removing this friend.",
+        )
+            .into_response();
+    }
     match delete_friendship(&state.db, current_user.id, friend_id).await {
         Ok(_) => match get_friends(&state.db, current_user.id).await {
             Ok(friends) => match render_friends_panel(&state.db, current_user.id, friends).await {

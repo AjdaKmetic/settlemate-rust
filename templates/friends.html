@@ -30,7 +30,6 @@
         <div class="row-info">
             <p class="row-title">{{ friend.name }}</p>
             <p class="row-meta">{{ friend.email }}</p>
-
             <form
                 class="friend-remove-form"
                 hx-post="/friends/{{ friend.id }}/delete"
